@@ -1,0 +1,19 @@
+{
+  "name": "predge-rootstock",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Predge agent-settlement stack on Rootstock — first x402-shaped facilitator on RSK.",
+  "scripts": {
+    "genwallet": "node script/genwallet.mjs",
+    "deploy-usdc": "node script/deploy-usdc.mjs",
+    "deploy-validator": "node script/deploy-validator.mjs",
+    "deploy-bond": "node script/deploy-bond.mjs",
+    "deploy-job": "node script/deploy-job.mjs",
+    "deploy-all": "node script/deploy-usdc.mjs && node script/deploy-validator.mjs && node script/deploy-bond.mjs && node script/deploy-job.mjs",
+    "demo": "node demo.mjs",
+    "test": "node --test test/*.mjs"
+  },
+  "dependencies": { "ethers": "^6.13.4", "solc": "0.8.26" },
+  "engines": { "node": ">=20" }
+}
