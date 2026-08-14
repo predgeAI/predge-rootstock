@@ -1,0 +1,10 @@
+{
+  "address": "0xDCf119ACd13d89F2926fF792070c6dA4d4134356",
+  "deployer": "0x657FC20C8ED9B0500D88df9378Dd1B0e3188d519",
+  "chainId": 31,
+  "deployTx": "0xac3a671e497fbf735a5efccc036b5214fa1e4c77e580be13c655ad0977985411",
+  "deployedAt": "2026-08-14T12:33:46.982Z",
+  "args": [
+    "0x657FC20C8ED9B0500D88df9378Dd1B0e3188d519"
+  ]
+}

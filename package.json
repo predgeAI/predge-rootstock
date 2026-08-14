@@ -12,8 +12,19 @@
     "deploy-job": "node script/deploy-job.mjs",
     "deploy-all": "node script/deploy-usdc.mjs && node script/deploy-validator.mjs && node script/deploy-bond.mjs && node script/deploy-job.mjs",
     "demo": "node demo.mjs",
-    "test": "node --test test/*.mjs"
+    "test": "node --test test/*.mjs",
+    "bond": "node bond.mjs",
+    "bond:demo": "node bond.mjs demo",
+    "anchor": "node anchor.mjs",
+    "anchor:demo": "node anchor.mjs demo",
+    "deploy-anchor": "node script/deploy-anchor.mjs",
+    "l402:demo": "node l402-bridge.mjs demo"
   },
-  "dependencies": { "ethers": "^6.13.4", "solc": "0.8.26" },
-  "engines": { "node": ">=20" }
+  "dependencies": {
+    "ethers": "^6.13.4",
+    "solc": "0.8.26"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }
