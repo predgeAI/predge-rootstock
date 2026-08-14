@@ -18,9 +18,14 @@
     "anchor": "node anchor.mjs",
     "anchor:demo": "node anchor.mjs demo",
     "deploy-anchor": "node script/deploy-anchor.mjs",
-    "l402:demo": "node l402-bridge.mjs demo"
+    "l402:demo": "node l402-bridge.mjs demo",
+    "btc:genwallet": "node script/btc-genwallet.mjs",
+    "btc:anchor": "node btc-anchor.mjs",
+    "btc:anchor:dry": "node btc-anchor.mjs --dry-run"
   },
   "dependencies": {
+    "@noble/secp256k1": "^3.1.0",
+    "bitcoinjs-lib": "^6.1.7",
     "ethers": "^6.13.4",
     "solc": "0.8.26"
   },

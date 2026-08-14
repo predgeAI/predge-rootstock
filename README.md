@@ -92,17 +92,43 @@ npm run bond:demo
 - **`block.timestamp`** — ~30s block time, monotonic-nondecreasing (RSKJ enforces `parent.ts <= block.ts`).
   Not Bitcoin's timestamp; treat as Ethereum-equivalent.
 
+## Anchor a batch to Bitcoin L1 (real OP_RETURN)
+
+The anchor cycle is one command per day:
+
+```bash
+# 1) One-time: generate a Bitcoin testnet key + address (writes .env.btc, 0600)
+npm run btc:genwallet
+# 2) Fund the printed tb1… address at https://bitcoinfaucet.uo1.net/  (2000+ sats is enough)
+# 3) Build + broadcast the OP_RETURN, then record the Bitcoin txid on Rootstock:
+npm run btc:anchor
+# (or preview without sending: npm run btc:anchor:dry)
+```
+
+The script (a) picks the most recent un-anchored `VerdictAnchor` batch, (b) builds a P2WPKH
+transaction whose second output is `OP_RETURN <merkle_root>`, (c) signs locally with pure-JS
+`@noble/secp256k1` (no native compile), (d) broadcasts via `mempool.space/testnet`, (e) waits
+for confirmation, (f) calls `VerdictAnchor.recordBtcAnchor(batchId, txid, blockHeight, time)`
+on Rootstock. After this runs, altering any verdict in the batch requires rewriting a
+Bitcoin block.
+
+## Companion tutorial
+
+If you're a team already deployed on Base / Arc / Arbitrum / an OP-stack and considering
+Rootstock as a second target, read: [**Portable EVM: Deploying an ERC-8004 Validator from
+an Ethereum L2 to Rootstock**](./tutorials/portable-evm-to-rootstock.md) — everything that
+changes and (mostly) doesn't when you move the same Solidity across.
+
 ## Roadmap
 
-- **Bitcoin-anchor for verdicts** — hash `(requestHash, verdict, responseHash, evaluator_sig)` and anchor
-  daily via Stacks micro-block or OP_RETURN on Bitcoin L1. Every verdict finalizes to Bitcoin.
-- **L402-payment adapter** — thin bridge over [`RDMoutlaw/pay402`](https://github.com/RDMoutlaw/pay402) so
-  the payment leg can run over Lightning while the bond + verdict stay on Rootstock. "Payment on Lightning,
-  dispute on Bitcoin" — a story nobody else tells.
-- **rBTC-collateralized reference integration** with one existing RootstockCollective Rewards recipient
-  (Sovryn escrow, LayerBank market, Money On Chain vault, or Tropykus lending) — turn Predge's ecosystem
-  from "hosted on Rootstock" into "connected to Rootstock DeFi".
-- **Bitcoin-anchor Clarity port** for the Stacks Endowment autumn window (sBTC-denominated bond).
+- **L402-payment adapter** — see the companion repo
+  [`predgeAI/rsk-l402-adapter`](https://github.com/predgeAI/rsk-l402-adapter) (already live)
+  so the payment leg can run over Lightning while the bond + verdict stay on Rootstock —
+  "payment on Lightning, dispute on Bitcoin", a story nobody else tells end-to-end.
+- **rBTC-collateralized reference integration** with one existing RootstockCollective Rewards
+  recipient (Sovryn escrow, LayerBank market, Money On Chain vault, or Tropykus lending) —
+  turn Predge's ecosystem from "hosted on Rootstock" into "connected to Rootstock DeFi".
+- **Clarity port** for the Stacks Endowment autumn window (sBTC-denominated bond).
 
 ## Contact
 
