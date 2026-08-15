@@ -22,23 +22,15 @@
 import { readFileSync, existsSync } from "node:fs";
 import crypto from "node:crypto";
 import * as bitcoin from "bitcoinjs-lib";
-import * as ecc from "@noble/secp256k1";
+import * as ecc from "@bitcoinerlab/secp256k1";
+import * as noble from "@noble/secp256k1";
 import { Contract } from "ethers";
 import { env, makeProvider, makeSigner, withRetry, txLink, addressLink } from "./lib/rsk.mjs";
 
-// ── ECC injection: bitcoinjs-lib v6 needs an ECC provider. Wire @noble/secp256k1's raw
-//    functions through the tiny interface bitcoinjs-lib expects. This is the minimum
-//    (sign / verify / pointAddScalar / privateAdd), which is all we use for P2WPKH signing.
-const eccAdapter = {
-  isPoint: (p) => { try { ecc.Point.fromHex(p); return true; } catch { return false; } },
-  isPrivate: (d) => ecc.utils.isValidPrivateKey(d),
-  pointFromScalar: (d, compressed = true) => Buffer.from(ecc.getPublicKey(d, compressed)),
-  sign: (hash, priv) => Buffer.from(ecc.signSync(hash, priv)),
-  verify: (hash, pub, sig) => ecc.verify(sig, hash, pub),
-};
-bitcoin.initEccLib(eccAdapter);
-// (Bitcoinjs v6 also needs `@bitcoinerlab/secp256k1` shape — we only use P2WPKH here so the
-// tiny adapter above is sufficient. If we add Taproot later, use `@bitcoinerlab/secp256k1`.)
+// bitcoinjs-lib v6 requires a full ECC provider; @bitcoinerlab/secp256k1 is the canonical
+// pure-JS one that passes its strict initEccLib validation. We keep @noble/secp256k1 as well
+// for raw preimage signing when we need direct control (e.g. building the witness by hand).
+bitcoin.initEccLib(ecc);
 
 const NETWORK = bitcoin.networks.testnet;
 const MEMPOOL_BASE = "https://mempool.space/testnet/api";
@@ -127,9 +119,14 @@ if (confirmed.length === 0) {
 const utxo = confirmed.sort((a, b) => b.value - a.value)[0];
 console.log(`      using UTXO ${utxo.txid}:${utxo.vout} · ${utxo.value} sats`);
 
-// ── estimate fee from mempool.space, size the tx ────────────────────────────
-const fees = JSON.parse(await api("/v1/fees/recommended"));
-const feeRate = Math.max(fees.economyFee || 1, 1); // sats/vB, minimum 1
+// ── estimate fee from mempool.space, size the tx (fallback to 1 sat/vB for testnet) ─
+let feeRate = 1;
+try {
+  const fees = JSON.parse(await api("/v1/fees/recommended"));
+  feeRate = Math.max(fees.economyFee || 1, 1); // sats/vB, minimum 1
+} catch (e) {
+  console.log(`      fees API unavailable (${e?.message?.slice(0, 60) || e}); falling back to 1 sat/vB (testnet-safe)`);
+}
 // A P2WPKH input + 2 outputs (OP_RETURN + change) is ~150 vB.
 const estimatedVBytes = 150;
 const fee = feeRate * estimatedVBytes;
@@ -158,13 +155,10 @@ const opReturnScript = bitcoin.script.compile([
 psbt.addOutput({ script: opReturnScript, value: 0 });
 psbt.addOutput({ address, value: change });
 
-// ── sign with our own bitcoinSigner-shaped object over @noble/secp256k1 ─────
+// ── sign with a bitcoinSigner-shaped object over @bitcoinerlab/secp256k1 ────
 const signer = {
   publicKey: pub,
-  sign: (hash) => {
-    const sig = ecc.signSync(hash, priv);
-    return Buffer.from(sig);
-  },
+  sign: (hash) => Buffer.from(ecc.sign(hash, priv)),
 };
 psbt.signInput(0, signer);
 psbt.finalizeAllInputs();

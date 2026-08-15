@@ -24,6 +24,7 @@
     "btc:anchor:dry": "node btc-anchor.mjs --dry-run"
   },
   "dependencies": {
+    "@bitcoinerlab/secp256k1": "^1.2.0",
     "@noble/secp256k1": "^3.1.0",
     "bitcoinjs-lib": "^6.1.7",
     "ethers": "^6.13.4",
