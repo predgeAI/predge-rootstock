@@ -1,0 +1,17 @@
+{
+  "chainId": 31,
+  "token": "0x8dbf326e12a9fF37ED6DDF75adA548C2640A6482",
+  "tokenSymbol": "USDRIF",
+  "agentJobERC20": "0x15C790fb445dc8Ed00aca65e424e26CDeB1999A0",
+  "evaluator": "0xca4E20f5903f795374B96331011Aaa24C45f6316",
+  "reviewer": "0x2a0cd8CF5d9370E9F994D9202d711502686fF6A9",
+  "evaluationWindowSeconds": 2073600,
+  "objectionPeriodSeconds": 864000,
+  "deployer": "0x2D34830dF17c92B01b51c1dcF4c29CD8C53BC28b",
+  "deployTxs": {
+    "agentJobERC20": "0xc83974a532ebe485933107f493a5bf4fcc725739fbb3d712749ae47d4ba8f024",
+    "evaluator": "0x36d45cd6522cad92779bde1152b8a33b0026cfb0eb7d07f70d047aa3d891955b"
+  },
+  "deployedAt": "2026-11-23T13:27:21.139Z",
+  "compiler": "solc 0.8.26, optimizer 200 runs, evm cancun (foundry.toml)"
+}

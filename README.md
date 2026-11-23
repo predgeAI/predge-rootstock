@@ -51,6 +51,28 @@ and the bond/escrow layer uses native rBTC — the paid-token layer is separate 
 | PredgeValidatorBond  | [`0xC2c4F125371c319D5bF5Ee49fEC5b4cB6787F5D2`](https://explorer.testnet.rootstock.io/address/0xC2c4F125371c319D5bF5Ee49fEC5b4cB6787F5D2) |
 | AgentJob             | [`0x2Bf0EaAc5FA4EaF36AA3a55883F6ba642385690E`](https://explorer.testnet.rootstock.io/address/0x2Bf0EaAc5FA4EaF36AA3a55883F6ba642385690E) |
 | MockUSDC (demo)      | [`0x34f4B3Eac9c24448e2BB7623016CDA85487474AB`](https://explorer.testnet.rootstock.io/address/0x34f4B3Eac9c24448e2BB7623016CDA85487474AB) |
+| AgentJobERC20 (USDRIF escrow) | [`0x15C790fb445dc8Ed00aca65e424e26CDeB1999A0`](https://rootstock-testnet.blockscout.com/address/0x15C790fb445dc8Ed00aca65e424e26CDeB1999A0) |
+| PredgeNoObjectionEvaluator (for the USDRIF escrow) | [`0xca4E20f5903f795374B96331011Aaa24C45f6316`](https://rootstock-testnet.blockscout.com/address/0xca4E20f5903f795374B96331011Aaa24C45f6316) |
+
+## USDRIF escrow (ERC-20 path)
+
+`AgentJob` above escrows native rBTC only (`msg.value`), and stays as deployed. `contracts/v2/AgentJobERC20.sol`
+is a separate contract with the same lifecycle, evaluator surface and `getJob` layout as the native `AgentJobV2`
+used for IBUKI job #1, but the escrow is one ERC-20 fixed at deploy time: testnet USDRIF
+(`0x8dbF326E12a9fF37ED6ddf75adA548c2640a6482`, 18 decimals). The client `approve`s, then `createJob(..., amount)`
+pulls exactly `amount` with `transferFrom`. Every payout is a pull credit withdrawn in USDRIF.
+
+- Same objection logic: `PredgeNoObjectionEvaluator` is the unchanged source of the job #1 evaluator
+  (objection period, `releaseOnSilence`, reviewer `resolve`, refund after the window), deployed against the
+  ERC-20 escrow. Both contracts are verified on Blockscout. Windows: objection 10 days, evaluation 24 days.
+- Token safety: accepts tokens that return `true` or nothing, reverts on `false`; checks the balance delta so a
+  fee-on-transfer token cannot under-fund a job; one reentrancy lock over every entry point; no payable
+  function, so native value is rejected. No owner, no admin, no upgrade.
+- Tests: `forge test` (unit tests with standard, false-returning, no-return, fee-on-transfer, lying and
+  reentrant tokens) and `npm run test:fork` (job-2 objection branch against the real testnet USDRIF on a fork).
+- One CLI for a job: `node script/usdrif-job.mjs <deploy|evidence|create|submit|object|resolve|release|refund|withdraw|status|e2e>`.
+  Steps that another party must sign (IBUKI's approve, createJob, object, withdraw) are printed as unsigned
+  transactions for their own wallet. Walkthrough: [tutorials/usdrif-job-escrow.md](./tutorials/usdrif-job-escrow.md).
 
 ## Reproduce it
 

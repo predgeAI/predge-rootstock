@@ -1,0 +1,19 @@
+# Foundry is used for the Solidity unit tests and for building the ERC-20 escrow pair
+# (AgentJobERC20 + PredgeNoObjectionEvaluator). The older contracts still deploy via script/_compile.mjs.
+# Compiler settings mirror the native PoC pair (solc 0.8.26, optimizer 200, cancun).
+[profile.default]
+src = "contracts"
+test = "test"
+out = "out"
+cache_path = "cache"
+libs = ["lib"]
+remappings = ["forge-std/=lib/forge-std/src/"]
+solc_version = "0.8.26"
+optimizer = true
+optimizer_runs = 200
+evm_version = "cancun"
+bytecode_hash = "ipfs"
+fuzz = { runs = 500 }
+
+[rpc_endpoints]
+rsk_testnet = "https://public-node.testnet.rsk.co"

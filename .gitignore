@@ -3,3 +3,6 @@ node_modules/
 *.log
 .DS_Store
 .env.btc
+out/
+cache/
+deploy/*.local.json

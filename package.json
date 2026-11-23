@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Predge agent-settlement stack on Rootstock — first x402-shaped facilitator on RSK.",
+  "description": "Predge agent-settlement stack on Rootstock \u2014 first x402-shaped facilitator on RSK.",
   "scripts": {
     "genwallet": "node script/genwallet.mjs",
     "deploy-usdc": "node script/deploy-usdc.mjs",
@@ -13,6 +13,9 @@
     "deploy-all": "node script/deploy-usdc.mjs && node script/deploy-validator.mjs && node script/deploy-bond.mjs && node script/deploy-job.mjs",
     "demo": "node demo.mjs",
     "test": "node --test test/*.mjs",
+    "test:sol": "forge test",
+    "test:fork": "RSK_FORK=1 forge test --match-contract Fork -vv",
+    "usdrif": "node script/usdrif-job.mjs",
     "bond": "node bond.mjs",
     "bond:demo": "node bond.mjs demo",
     "anchor": "node anchor.mjs",
