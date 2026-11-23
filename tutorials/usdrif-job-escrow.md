@@ -48,6 +48,12 @@ node script/usdrif-job.mjs withdraw --address <CLIENT>
 node script/usdrif-job.mjs status --job <ID> --tz Asia/Tokyo
 ```
 
+A client who does not use the CLI can do the client steps (approve + createJob, object, withdraw) from one page
+in MetaMask: [`app/job2.html`](../app/job2.html), hosted at https://predge-rsk-job.vercel.app/job2.html. It makes the
+same calls as the CLI (the objection hash is `keccak256` of the UTF-8 text, as with `object --text`), shows the job
+state and the objection deadline in UTC and local time, and takes `provider`, `amount`, `evaluator`, `spec` and
+`expiryDays` from the URL so a ready link can be sent to the client.
+
 Without an objection, anyone runs `release --job <ID> --evidence ev.json` after the 10 days and the provider is
 credited. If nobody decides within 24 days of the submission, `refund --job <ID>` credits the client.
 

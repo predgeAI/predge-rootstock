@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Predge USDRIF Job</title>
+<meta name="description" content="Create a USDRIF escrow job, file an objection and withdraw a refund on Rootstock testnet.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f26b1d'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='17' font-weight='700' text-anchor='middle' fill='white'%3EP%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #f6f5f2; --card: #ffffff; --ink: #1b1c1f; --muted: #686b73; --line: #e3e1dc;
+  --accent: #f26b1d; --accent-ink: #ffffff; --ok: #157a4a; --ok-bg: #e7f5ed; --warn: #9a5b00; --warn-bg: #fff4e0;
+  --err: #b3261e; --err-bg: #fdecea; --code: #f1f0ec;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121316; --card: #1b1d21; --ink: #eceae6; --muted: #9a9ca3; --line: #2c2f35;
+    --accent: #ff7a2e; --accent-ink: #111; --ok: #5fd39a; --ok-bg: #13301f; --warn: #f0b45a; --warn-bg: #33270f;
+    --err: #ff8a80; --err-bg: #3a1714; --code: #24272c;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121316; --card: #1b1d21; --ink: #eceae6; --muted: #9a9ca3; --line: #2c2f35;
+  --accent: #ff7a2e; --accent-ink: #111; --ok: #5fd39a; --ok-bg: #13301f; --warn: #f0b45a; --warn-bg: #33270f;
+  --err: #ff8a80; --err-bg: #3a1714; --code: #24272c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+main { max-width: 680px; margin: 0 auto; padding: 24px 16px 40px; }
+header h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+header p { margin: 0 0 18px; color: var(--muted); }
+.badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--warn-bg); color: var(--warn); margin-bottom: 10px; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+section h2 { font-size: 16px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+.step { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 700; flex: none; }
+label { display: block; font-size: 13px; font-weight: 600; margin: 10px 0 4px; }
+input, textarea { width: 100%; font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; }
+input.mono, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; word-break: break-all; }
+textarea { min-height: 90px; resize: vertical; }
+button { font: inherit; font-weight: 600; border: 0; border-radius: 8px; padding: 10px 16px; cursor: pointer; background: var(--accent); color: var(--accent-ink); margin-top: 12px; }
+button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.hint { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+.msg { border-radius: 8px; padding: 10px 12px; margin-top: 12px; font-size: 14px; overflow-wrap: anywhere; }
+.msg.ok { background: var(--ok-bg); color: var(--ok); }
+.msg.err { background: var(--err-bg); color: var(--err); }
+.msg.info { background: var(--code); color: var(--ink); }
+.deadline { border-left: 3px solid var(--accent); padding: 6px 10px; margin-top: 10px; background: var(--code); border-radius: 0 8px 8px 0; }
+.deadline b { display: block; }
+a { color: var(--accent); }
+.hidden { display: none !important; }
+.joblist button { margin: 6px 6px 0 0; padding: 6px 10px; font-size: 13px; }
+footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 20px; }
+@media (max-width: 480px) { .kv { grid-template-columns: 1fr; } .kv dt { margin-top: 6px; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <span class="badge">Rootstock testnet · chain 31</span>
+  <h1>USDRIF job with an objection window</h1>
+  <p>You are the client. You fund the job in USDRIF. After the provider submits the work, you have 10 days to object. If you object, a reviewer decides. If the client is refunded, you withdraw the refund here.</p>
+</header>
+
+<section id="wallet">
+  <h2><span class="step">1</span>Wallet</h2>
+  <div class="row">
+    <button id="connectBtn">Connect MetaMask</button>
+    <button id="refreshBtn" class="secondary hidden">Refresh</button>
+  </div>
+  <dl class="kv hidden" id="walletInfo" style="margin-top:12px">
+    <dt>Address</dt><dd class="mono" id="addr"></dd>
+    <dt>tRBTC (gas)</dt><dd id="rbtc"></dd>
+    <dt>USDRIF</dt><dd id="usdrif"></dd>
+  </dl>
+  <p class="hint">Gas: free tRBTC from <a href="https://faucet.rootstock.io" target="_blank" rel="noopener">faucet.rootstock.io</a>. USDRIF for this test is sent to you by Predge.</p>
+  <div id="walletMsg"></div>
+</section>
+
+<section id="create">
+  <h2><span class="step">2</span>Create the job</h2>
+  <label for="provider">Provider (does the work, gets paid if there is no objection)</label>
+  <input id="provider" class="mono" placeholder="0x…" autocomplete="off">
+  <label for="amount">Amount (USDRIF)</label>
+  <input id="amount" inputmode="decimal" placeholder="10">
+  <label for="evaluator">Evaluator (the objection contract)</label>
+  <input id="evaluator" class="mono" placeholder="0x…" autocomplete="off">
+  <label for="spec">Spec hash (commitment to the agreed evidence checklist)</label>
+  <input id="spec" class="mono" placeholder="0x… (32 bytes)" autocomplete="off">
+  <label for="expiryDays">Days the provider has to submit</label>
+  <input id="expiryDays" inputmode="decimal" placeholder="7">
+  <p class="hint">Two transactions: approve USDRIF (skipped if the allowance is already enough), then createJob, which moves the USDRIF into escrow.</p>
+  <button id="createBtn" disabled>Approve and create job</button>
+  <div id="createMsg"></div>
+</section>
+
+<section id="jobBox">
+  <h2><span class="step">3</span>Job status</h2>
+  <div class="row">
+    <input id="jobId" inputmode="numeric" placeholder="Job id" style="max-width:140px">
+    <button id="loadBtn" class="secondary" style="margin-top:0">Load job</button>
+  </div>
+  <div class="joblist" id="myJobs"></div>
+  <div id="jobView" class="hidden" style="margin-top:12px">
+    <dl class="kv">
+      <dt>Job</dt><dd id="jvId"></dd>
+      <dt>State</dt><dd id="jvState"></dd>
+      <dt>Escrow</dt><dd id="jvEscrow"></dd>
+      <dt>Client</dt><dd class="mono" id="jvClient"></dd>
+      <dt>Provider</dt><dd class="mono" id="jvProvider"></dd>
+      <dt>Objection</dt><dd id="jvObjection"></dd>
+    </dl>
+    <div id="jvDeadlines"></div>
+  </div>
+  <div id="jobMsg"></div>
+</section>
+
+<section id="objectBox">
+  <h2><span class="step">4</span>Object</h2>
+  <p class="hint" style="margin-top:0">Possible only after the provider has submitted, and only before the objection deadline. Only a hash of your text goes on-chain (keccak256 of the UTF-8 text). Keep the text: the reviewer will ask for it.</p>
+  <label for="reason">Reason (short, specific)</label>
+  <textarea id="reason" maxlength="2000" placeholder="e.g. The after-work photographs do not show the north side of the site."></textarea>
+  <p class="hint">Hash that will be recorded: <span class="mono" id="reasonHash">-</span></p>
+  <div class="row">
+    <button id="objectBtn" disabled>File objection</button>
+    <button id="saveReasonBtn" class="secondary" disabled>Save text as .txt</button>
+  </div>
+  <div id="objectMsg"></div>
+</section>
+
+<section id="withdrawBox">
+  <h2><span class="step">5</span>Refund</h2>
+  <dl class="kv"><dt>Withdrawable for you</dt><dd id="credit">-</dd></dl>
+  <div class="row">
+    <button id="withdrawBtn" disabled>Withdraw USDRIF</button>
+    <button id="claimBtn" class="secondary hidden">Claim refund (deadline passed)</button>
+  </div>
+  <p class="hint">If the reviewer refunds you (or nobody decides in time), the escrow becomes a credit for you. Withdraw moves it to your wallet.</p>
+  <div id="withdrawMsg"></div>
+</section>
+
+<footer>Predge · <a href="https://predge.io" target="_blank" rel="noopener">predge.io</a> · testnet only, no real money</footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" integrity="sha384-6Zl0Pc8zjSz8KvmNeXRvUQgY4ryFb+BwDvKCmLYcBME0joAaru491tQgi9B7zsMM" crossorigin="anonymous"></script>
+<script>
+"use strict";
+// Same contracts and the same calls as script/usdrif-job.mjs (create / object / withdraw / status).
+const CHAIN_ID = 31;
+const CHAIN_HEX = "0x1f";
+const EXPLORER = "https://rootstock-testnet.blockscout.com";
+const PUBLIC_RPC = "https://public-node.testnet.rsk.co";
+const JOB_ADDR = "0x15C790fb445dc8Ed00aca65e424e26CDeB1999A0";
+// USDRIF on testnet, lower-cased: the explorer spelling uses the Rootstock EIP-1191 checksum, which ethers rejects.
+const TOKEN_ADDR = "0x8dbf326e12a9ff37ed6ddf75ada548c2640a6482";
+const DEFAULT_EVALUATOR = "0xca4E20f5903f795374B96331011Aaa24C45f6316";
+
+const JOB_ABI = [
+  "function createJob(address provider, address evaluator, bytes32 specHash, uint64 expiredAt, uint256 amount) returns (uint256 jobId)",
+  "function getJob(uint256 jobId) view returns ((address client, address provider, address evaluator, uint256 escrow, uint64 expiredAt, uint64 submittedAt, uint8 state, bool hashedOnChain, bytes32 specHash, bytes32 deliverable, bytes32 reason))",
+  "function jobCount() view returns (uint256)",
+  "function credit(address) view returns (uint256)",
+  "function evaluationWindow() view returns (uint64)",
+  "function claimRefund(uint256 jobId)",
+  "function withdraw()",
+  "event JobCreated(uint256 indexed jobId, address indexed client, address indexed evaluator, address provider, uint256 escrow, uint64 expiredAt, bytes32 specHash)",
+  "error BadExpiry()", "error BadState()", "error EvaluatorNotIndependent()", "error NotExpired()", "error NothingToWithdraw()",
+  "error PastDeadline()", "error Reentrancy()", "error TransferFailed()", "error UnexpectedAmountReceived(uint256 expected, uint256 received)",
+  "error ZeroAddress()", "error ZeroEscrow()", "error ZeroRecipient()"
+];
+const EV_ABI = [
+  "function object(uint256 jobId, bytes32 objectionHash)",
+  "function objectionOf(uint256 jobId) view returns ((bytes32 hash, uint64 at, bool resolved))",
+  "function objectionPeriod() view returns (uint64)",
+  "function evaluationWindow() view returns (uint64)",
+  "function job() view returns (address)",
+  "error AlreadyObjected()", "error BadState()", "error NotClient()", "error NotOurJob()", "error ObjectionPeriodOver()", "error ZeroHash()"
+];
+const ERC20_ABI = [
+  "function approve(address,uint256) returns (bool)", "function allowance(address,address) view returns (uint256)",
+  "function balanceOf(address) view returns (uint256)", "function decimals() view returns (uint8)"
+];
+const ERRORS = {
+  BadExpiry: "The expiry must be in the future.",
+  BadState: "The job is not in the right state for this action.",
+  EvaluatorNotIndependent: "The evaluator must be different from you and from the provider.",
+  NotExpired: "The refund deadline has not passed yet.",
+  NothingToWithdraw: "There is nothing to withdraw for this address.",
+  PastDeadline: "The deadline for this action has passed.",
+  TransferFailed: "The USDRIF transfer failed. Check your USDRIF balance and the approval.",
+  UnexpectedAmountReceived: "The escrow received a different amount than expected.",
+  ZeroAddress: "Provider and evaluator must be set.",
+  ZeroEscrow: "The amount must be greater than zero.",
+  AlreadyObjected: "An objection was already filed for this job.",
+  NotClient: "Only the client of this job (the wallet that created it) can object.",
+  NotOurJob: "This job does not use this evaluator.",
+  ObjectionPeriodOver: "The objection period is over.",
+  ZeroHash: "The objection text is empty."
+};
+const STATE = ["None", "Open", "Submitted", "Completed", "Rejected", "Expired"];
+const STATE_TEXT = {
+  Open: "Open: funded, waiting for the provider to submit the work",
+  Submitted: "Submitted: the objection window is running",
+  Completed: "Completed: the provider was paid",
+  Rejected: "Rejected: the client was refunded",
+  Expired: "Expired: the client was refunded"
+};
+
+const { ethers } = window;
+const $ = (id) => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+const RPC = (isLocal && params.get("rpc")) || PUBLIC_RPC; // ?rpc= only for local testing against a fork
+const read = new ethers.JsonRpcProvider(RPC, CHAIN_ID, { staticNetwork: true, cacheTimeout: -1 });
+const jobR = new ethers.Contract(JOB_ADDR, JOB_ABI, read);
+const tokenR = new ethers.Contract(TOKEN_ADDR, ERC20_ABI, read);
+const errIface = new ethers.Interface([...JOB_ABI, ...EV_ABI].filter((x) => x.startsWith("error")));
+
+let account = null, signer = null, currentJob = null, currentJob_data = null, evalR = null, decimals = 18n;
+const fmtTok = (v) => Number(ethers.formatUnits(v, decimals)).toLocaleString("en-US", { maximumFractionDigits: 6 }) + " USDRIF";
+const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
+const txLink = (h) => `<a href="${EXPLORER}/tx/${h}" target="_blank" rel="noopener">${short(h)}</a>`;
+const addrLink = (a) => `<a href="${EXPLORER}/address/${a}" target="_blank" rel="noopener">${a}</a>`;
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function show(id, kind, html) { $(id).innerHTML = html ? `<div class="msg ${kind}">${html}</div>` : ""; }
+function addr(v, what) {
+  const s = String(v || "").trim();
+  if (!/^0x[0-9a-fA-F]{40}$/.test(s)) throw new Error(`${what}: not a valid address.`);
+  return ethers.getAddress(s.toLowerCase()); // ignore checksum case (Rootstock and Ethereum checksums differ)
+}
+
+function explain(e) {
+  if (e?.code === "ACTION_REJECTED" || e?.info?.error?.code === 4001 || e?.error?.code === 4001) return "You rejected the request in MetaMask.";
+  if (e?.revert?.name) return ERRORS[e.revert.name] || `Reverted: ${e.revert.name}`;
+  const datas = [e?.data, e?.info?.error?.data, e?.error?.data, e?.info?.error?.data?.data, e?.error?.data?.data];
+  for (const d of datas) {
+    if (typeof d === "string" && d.startsWith("0x") && d.length >= 10) {
+      try { const p = errIface.parseError(d); if (p) return ERRORS[p.name] || `Reverted: ${p.name}`; } catch {}
+    }
+  }
+  const m = e?.shortMessage || e?.info?.error?.message || e?.message || String(e);
+  if (/insufficient funds/i.test(m)) return "Not enough tRBTC for gas. Get some at faucet.rootstock.io.";
+  return esc(m);
+}
+
+// ---------------------------------------------------------------- wallet
+async function ensureChain(eth) {
+  const cur = await eth.request({ method: "eth_chainId" });
+  if (parseInt(cur, 16) === CHAIN_ID) return;
+  try {
+    await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_HEX }] });
+  } catch (e) {
+    if (e?.code === 4902 || e?.data?.originalError?.code === 4902 || /unrecognized|not been added/i.test(e?.message || "")) {
+      await eth.request({ method: "wallet_addEthereumChain", params: [{
+        chainId: CHAIN_HEX, chainName: "Rootstock Testnet",
+        nativeCurrency: { name: "Test RBTC", symbol: "tRBTC", decimals: 18 },
+        rpcUrls: [PUBLIC_RPC], blockExplorerUrls: [EXPLORER]
+      }] });
+    } else throw e;
+  }
+}
+
+async function connect() {
+  show("walletMsg");
+  const eth = window.ethereum;
+  if (!eth) { show("walletMsg", "err", 'MetaMask not found. Install it from <a href="https://metamask.io" target="_blank" rel="noopener">metamask.io</a>, or open this page in the MetaMask mobile browser.'); return; }
+  try {
+    const accs = await eth.request({ method: "eth_requestAccounts" });
+    await ensureChain(eth);
+    const bp = new ethers.BrowserProvider(eth, "any");
+    signer = await bp.getSigner(accs[0]);
+    account = ethers.getAddress(String(accs[0]).toLowerCase());
+    $("connectBtn").textContent = "Connected";
+    $("connectBtn").disabled = true;
+    $("refreshBtn").classList.remove("hidden");
+    $("walletInfo").classList.remove("hidden");
+    if (!eth._predgeHooked && eth.on) {
+      eth._predgeHooked = true;
+      eth.on("accountsChanged", () => location.reload());
+      eth.on("chainChanged", () => location.reload());
+    }
+    await refreshAll();
+    await findMyJobs();
+  } catch (e) { show("walletMsg", "err", explain(e)); }
+}
+
+async function refreshWallet() {
+  if (!account) return;
+  const [rbtc, bal] = await Promise.all([read.getBalance(account), tokenR.balanceOf(account)]);
+  $("addr").innerHTML = addrLink(account);
+  $("rbtc").textContent = Number(ethers.formatEther(rbtc)).toLocaleString("en-US", { maximumFractionDigits: 8 }) + " tRBTC";
+  $("usdrif").textContent = fmtTok(bal);
+  if (rbtc === 0n) show("walletMsg", "err", 'This wallet has no tRBTC for gas. Get some at <a href="https://faucet.rootstock.io" target="_blank" rel="noopener">faucet.rootstock.io</a>.');
+  updateButtons();
+}
+
+async function refreshAll() { await refreshWallet(); if (currentJob) await loadJob(currentJob); await refreshCredit(); }
+
+// Rootstock has no EIP-1559: legacy type-0 tx with an explicit gas price, like lib/rsk.mjs and the CLI.
+async function txOpts(estimate) {
+  const gp = (BigInt(await read.send("eth_gasPrice", [])) * 12n) / 10n;
+  const gas = await estimate;
+  return { type: 0, gasPrice: gp, gasLimit: (gas * 13n) / 10n + 10000n };
+}
+async function waitFor(tx, label, box) {
+  show(box, "info", `${label}: sent ${txLink(tx.hash)}. Waiting for confirmation (Rootstock blocks take about 30 s)…`);
+  for (let i = 0; i < 180; i++) {
+    const rc = await read.getTransactionReceipt(tx.hash);
+    if (rc) {
+      if (rc.status !== 1) throw new Error(`${label} failed on-chain: ${txLink(tx.hash)}`);
+      return rc;
+    }
+    await new Promise((r) => setTimeout(r, isLocal && RPC !== PUBLIC_RPC ? 300 : 4000));
+  }
+  throw new Error(`${label}: not confirmed yet. Check ${txLink(tx.hash)} and refresh.`);
+}
+
+// ---------------------------------------------------------------- create (approve if short, then createJob)
+async function createJob() {
+  show("createMsg");
+  const btn = $("createBtn");
+  btn.disabled = true;
+  try {
+    const provider = addr($("provider").value, "Provider");
+    const evaluator = addr($("evaluator").value, "Evaluator");
+    const spec = $("spec").value.trim();
+    if (!/^0x[0-9a-fA-F]{64}$/.test(spec)) throw new Error("Spec hash: must be 0x followed by 64 hex characters.");
+    const amtStr = $("amount").value.trim();
+    if (!/^\d+(\.\d+)?$/.test(amtStr)) throw new Error("Amount: enter a number, e.g. 10.");
+    const amount = ethers.parseUnits(amtStr, decimals);
+    if (amount === 0n) throw new Error("Amount must be greater than zero.");
+    const days = Number($("expiryDays").value || 7);
+    if (!(days > 0 && days <= 60)) throw new Error("Days to submit: between 1 and 60.");
+    // Evaluator must be wired to this escrow contract (otherwise nobody could object or release).
+    const evJob = await new ethers.Contract(evaluator, EV_ABI, read).job().catch(() => null);
+    if (!evJob || evJob.toLowerCase() !== JOB_ADDR.toLowerCase()) throw new Error("Evaluator: this address is not the objection contract for this escrow.");
+    const bal = await tokenR.balanceOf(account);
+    if (bal < amount) throw new Error(`Your wallet holds ${fmtTok(bal)}, less than ${fmtTok(amount)}. Ask Predge for testnet USDRIF first.`);
+    const expiry = (await read.getBlock("latest")).timestamp + Math.round(days * 86400);
+    const token = new ethers.Contract(TOKEN_ADDR, ERC20_ABI, signer);
+    const job = new ethers.Contract(JOB_ADDR, JOB_ABI, signer);
+    const log = [];
+    if ((await tokenR.allowance(account, JOB_ADDR)) < amount) {
+      show("createMsg", "info", "Step 1 of 2: confirm the USDRIF approval in MetaMask.");
+      const tx = await token.approve(JOB_ADDR, amount, await txOpts(tokenR.approve.estimateGas(JOB_ADDR, amount, { from: account })));
+      await waitFor(tx, "Approve", "createMsg");
+      log.push(`Approve ${txLink(tx.hash)}`);
+    }
+    show("createMsg", "info", (log.length ? log.join("<br>") + "<br>" : "") + "Step 2 of 2: confirm createJob in MetaMask.");
+    const args = [provider, evaluator, spec, expiry, amount];
+    const tx2 = await job.createJob(...args, await txOpts(jobR.createJob.estimateGas(...args, { from: account })));
+    const rc = await waitFor(tx2, "createJob", "createMsg");
+    let jobId = null;
+    for (const l of rc.logs) { try { const p = jobR.interface.parseLog(l); if (p?.name === "JobCreated") jobId = p.args.jobId.toString(); } catch {} }
+    log.push(`createJob ${txLink(tx2.hash)}`);
+    show("createMsg", "ok", `Job ${jobId ?? "?"} created. ${fmtTok(amount)} is in escrow.<br>${log.join("<br>")}<br>Send the job id <b>${jobId ?? "?"}</b> to Predge.`);
+    if (jobId) { $("jobId").value = jobId; setJobInUrl(jobId); await loadJob(jobId); findMyJobs(); }
+    await refreshWallet();
+  } catch (e) { show("createMsg", "err", e instanceof Error && !e.code && !e.revert ? e.message : explain(e)); }
+  finally { updateButtons(); }
+}
+
+function setJobInUrl(id) {
+  const u = new URL(location.href);
+  u.searchParams.set("job", id);
+  history.replaceState(null, "", u);
+}
+
+// ---------------------------------------------------------------- status + deadlines (same logic as sdk/deadlines.mjs)
+const TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+function fmtTime(ts) {
+  const d = new Date(ts * 1000);
+  const local = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZoneName: "short" }).format(d);
+  return { utc: d.toISOString().replace(".000Z", "").replace("T", " "), local };
+}
+function computeDeadlines({ job, objectionPeriod, evaluationWindow, objection, now }) {
+  const state = STATE[Number(job.state)] ?? `Unknown(${job.state})`;
+  const expiredAt = Number(job.expiredAt), submittedAt = Number(job.submittedAt);
+  const objected = !!objection && objection.hash && !/^0x0+$/.test(objection.hash);
+  const out = [];
+  const add = (key, who, what, ts, active) => out.push({ key, who, what, ts, ...fmtTime(ts), secondsLeft: ts - now, passed: ts - now <= 0, active });
+  if (state === "Open") add("submit", "provider", "The provider must submit the completion package before this time, or you can reclaim the escrow.", expiredAt, true);
+  if (state === "Submitted") {
+    const objEnd = submittedAt + objectionPeriod, evalEnd = submittedAt + evaluationWindow;
+    if (!objected) {
+      add("objection", "client", "Objection deadline: last moment to file an objection. After it, anyone can release the payment to the provider.", objEnd, true);
+    } else if (!objection.resolved) {
+      add("reviewerDecision", "reviewer", "Objection filed: the reviewer must decide before this time, otherwise you can claim a refund.", evalEnd, true);
+    }
+    add("refundFallback", "anyone", "If nothing was decided by this time, the client can claim a refund.", evalEnd, false);
+  }
+  return { state, objected: !!objected, deadlines: out };
+}
+function left(s) {
+  if (s <= 0) return "passed";
+  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+  return (d ? `${d}d ` : "") + `${h}h ${m}m left`;
+}
+
+async function loadJob(idRaw) {
+  show("jobMsg");
+  try {
+    const id = BigInt(String(idRaw).trim());
+    if (id <= 0n) throw new Error("Enter a job id (1, 2, …).");
+    const count = await jobR.jobCount();
+    if (id > count) throw new Error(`Job ${id} does not exist yet (this contract has ${count} job${count === 1n ? "" : "s"}).`);
+    const j = await jobR.getJob(id);
+    evalR = new ethers.Contract(j.evaluator, EV_ABI, read);
+    const [period, window, o, blk] = await Promise.all([evalR.objectionPeriod(), evalR.evaluationWindow(), evalR.objectionOf(id), read.getBlock("latest")]);
+    const now = blk.timestamp;
+    const d = computeDeadlines({ job: j, objectionPeriod: Number(period), evaluationWindow: Number(window), objection: { hash: o.hash, at: Number(o[1]), resolved: o.resolved }, now }); // o[1]: Result.at is Array.prototype.at
+    currentJob = id.toString();
+    currentJob_data = { j, o, d, now, period: Number(period), window: Number(window) };
+    $("jobView").classList.remove("hidden");
+    $("jvId").innerHTML = `#${id} on ${addrLink(JOB_ADDR)}`;
+    $("jvState").textContent = STATE_TEXT[d.state] || d.state;
+    $("jvEscrow").textContent = fmtTok(j.escrow);
+    $("jvClient").innerHTML = addrLink(j.client) + (account && j.client.toLowerCase() === account.toLowerCase() ? " (you)" : "");
+    $("jvProvider").innerHTML = addrLink(j.provider);
+    $("jvObjection").innerHTML = d.objected
+      ? `Filed ${fmtTime(Number(o[1])).utc} UTC · hash <span class="mono">${o.hash}</span>${o.resolved ? " · decided by the reviewer" : " · waiting for the reviewer"}`
+      : "None";
+    let html = "";
+    if (d.state === "Open") {
+      html += `<div class="deadline"><b>Objection window</b>Opens when the provider submits and stays open for ${Math.round(Number(period) / 86400)} days.</div>`;
+    }
+    for (const x of d.deadlines.filter((x) => x.active || x.key === "refundFallback")) {
+      html += `<div class="deadline"><b>${x.utc} UTC · ${esc(x.local)} (${esc(TZ)}) · ${left(x.secondsLeft)}</b>${esc(x.what)}</div>`;
+    }
+    $("jvDeadlines").innerHTML = html;
+    setJobInUrl(currentJob);
+    await refreshCredit();
+  } catch (e) { $("jobView").classList.add("hidden"); currentJob = null; currentJob_data = null; show("jobMsg", "err", e instanceof Error && !e.code ? esc(e.message) : explain(e)); }
+  updateButtons();
+}
+
+async function findMyJobs() {
+  if (!account) return;
+  try {
+    const count = Number(await jobR.jobCount());
+    const ids = [];
+    for (let i = count; i >= 1 && i > count - 100; i--) ids.push(i);
+    const jobs = await Promise.all(ids.map((i) => jobR.getJob(i).then((j) => ({ i, j }))));
+    const mine = jobs.filter(({ j }) => j.client.toLowerCase() === account.toLowerCase());
+    $("myJobs").innerHTML = mine.length ? `<p class="hint">Your jobs:</p>` + mine.map(({ i, j }) => `<button class="secondary" data-job="${i}">#${i} · ${STATE[Number(j.state)]}</button>`).join("") : "";
+    $("myJobs").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { $("jobId").value = b.dataset.job; loadJob(b.dataset.job); }));
+    if (!currentJob && mine.length) { $("jobId").value = mine[0].i; await loadJob(mine[0].i); }
+  } catch (e) { /* listing is a convenience */ }
+}
+
+// ---------------------------------------------------------------- object (same as `usdrif-job.mjs object --text`: keccak256 of the UTF-8 text)
+function reasonHash() { const t = $("reason").value.trim(); return t ? ethers.keccak256(ethers.toUtf8Bytes(t)) : null; }
+async function fileObjection() {
+  show("objectMsg");
+  $("objectBtn").disabled = true;
+  try {
+    const { j } = currentJob_data;
+    const h = reasonHash();
+    if (!h) throw new Error("Write the reason first.");
+    const ev = new ethers.Contract(j.evaluator, EV_ABI, signer);
+    show("objectMsg", "info", "Confirm the objection in MetaMask.");
+    const tx = await ev.object(BigInt(currentJob), h, await txOpts(evalR.object.estimateGas(BigInt(currentJob), h, { from: account })));
+    await waitFor(tx, "Objection", "objectMsg");
+    show("objectMsg", "ok", `Objection filed: ${txLink(tx.hash)}<br>Recorded hash <span class="mono">${h}</span>. The payment is now on hold for the reviewer. Send the same text to Predge.`);
+    downloadReason();
+    await loadJob(currentJob);
+  } catch (e) { show("objectMsg", "err", e instanceof Error && !e.code && !e.revert ? esc(e.message) : explain(e)); }
+  updateButtons();
+}
+function downloadReason() {
+  const t = $("reason").value.trim();
+  if (!t) return;
+  const body = `Objection for job ${currentJob ?? "?"} (AgentJobERC20 ${JOB_ADDR}, Rootstock testnet)\nkeccak256(text) = ${reasonHash()}\n\n${t}\n`;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([body], { type: "text/plain" }));
+  a.download = `objection-job-${currentJob ?? "x"}.txt`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ---------------------------------------------------------------- refund: withdraw credit / claimRefund
+async function refreshCredit() {
+  if (!account) { $("credit").textContent = "-"; return; }
+  const c = await jobR.credit(account);
+  $("credit").textContent = fmtTok(c);
+  $("withdrawBtn").dataset.credit = c.toString();
+  updateButtons();
+}
+async function withdraw() {
+  show("withdrawMsg");
+  $("withdrawBtn").disabled = true;
+  try {
+    const job = new ethers.Contract(JOB_ADDR, JOB_ABI, signer);
+    show("withdrawMsg", "info", "Confirm the withdrawal in MetaMask.");
+    const tx = await job.withdraw(await txOpts(jobR.withdraw.estimateGas({ from: account })));
+    await waitFor(tx, "Withdraw", "withdrawMsg");
+    show("withdrawMsg", "ok", `Withdrawn to your wallet: ${txLink(tx.hash)}`);
+    await refreshAll();
+  } catch (e) { show("withdrawMsg", "err", explain(e)); }
+  updateButtons();
+}
+async function claimRefund() {
+  show("withdrawMsg");
+  try {
+    const job = new ethers.Contract(JOB_ADDR, JOB_ABI, signer);
+    const id = BigInt(currentJob);
+    const tx = await job.claimRefund(id, await txOpts(jobR.claimRefund.estimateGas(id, { from: account })));
+    await waitFor(tx, "Claim refund", "withdrawMsg");
+    show("withdrawMsg", "ok", `Refund credited: ${txLink(tx.hash)}. Now press Withdraw.`);
+    await refreshAll();
+  } catch (e) { show("withdrawMsg", "err", explain(e)); }
+}
+
+// ---------------------------------------------------------------- buttons
+function updateButtons() {
+  $("createBtn").disabled = !account;
+  const cd = currentJob_data;
+  const isClient = !!(account && cd && cd.j.client.toLowerCase() === account.toLowerCase());
+  const canObject = !!(isClient && cd.d.state === "Submitted" && !cd.d.objected && cd.now < Number(cd.j.submittedAt) + cd.period && reasonHash());
+  $("objectBtn").disabled = !canObject;
+  $("saveReasonBtn").disabled = !reasonHash();
+  let why = "";
+  if (cd && account && !isClient) why = "Only the client of this job can object; the connected wallet is not the client.";
+  else if (cd && cd.d.state === "Open") why = "The provider has not submitted yet. The Object button turns on after the submission.";
+  else if (cd && cd.d.state === "Submitted" && cd.d.objected) why = "An objection is already filed for this job.";
+  else if (cd && cd.d.state === "Submitted" && cd.now >= Number(cd.j.submittedAt) + cd.period) why = "The objection period is over.";
+  else if (cd && !["Open", "Submitted"].includes(cd.d.state)) why = "This job is finished.";
+  if (!$("objectMsg").querySelector(".ok,.err")) show("objectMsg", why ? "info" : "", why);
+  $("withdrawBtn").disabled = !(account && BigInt($("withdrawBtn").dataset.credit || "0") > 0n);
+  const refundable = !!(cd && account && ((cd.d.state === "Open" && cd.now >= Number(cd.j.expiredAt)) || (cd.d.state === "Submitted" && cd.now >= Number(cd.j.submittedAt) + cd.window)));
+  $("claimBtn").classList.toggle("hidden", !refundable);
+}
+
+// ---------------------------------------------------------------- init
+$("provider").value = params.get("provider") || "";
+$("amount").value = params.get("amount") || "";
+$("evaluator").value = params.get("evaluator") || DEFAULT_EVALUATOR;
+$("spec").value = params.get("spec") || "";
+$("expiryDays").value = params.get("expiryDays") || "7";
+$("connectBtn").addEventListener("click", connect);
+$("refreshBtn").addEventListener("click", () => refreshAll().catch((e) => show("walletMsg", "err", explain(e))));
+$("createBtn").addEventListener("click", createJob);
+$("loadBtn").addEventListener("click", () => loadJob($("jobId").value));
+$("reason").addEventListener("input", () => { const h = reasonHash(); $("reasonHash").textContent = h || "-"; updateButtons(); });
+$("objectBtn").addEventListener("click", fileObjection);
+$("saveReasonBtn").addEventListener("click", downloadReason);
+$("withdrawBtn").addEventListener("click", withdraw);
+$("claimBtn").addEventListener("click", claimRefund);
+tokenR.decimals().then((d) => { decimals = BigInt(d); }).catch(() => {});
+if (params.get("job")) { $("jobId").value = params.get("job"); loadJob(params.get("job")); }
+if (window.ethereum) window.ethereum.request({ method: "eth_accounts" }).then((a) => { if (a && a.length) connect(); }).catch(() => {});
+</script>
+</body>
+</html>
