@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Predge Contractor</title>
+<meta name="description" content="Contractor page: sign the checklist, upload evidence per item, submit each milestone package, answer objections, withdraw. Rootstock testnet.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f26b1d'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='17' font-weight='700' text-anchor='middle' fill='white'%3EP%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="pilot.css">
+</head>
+<body data-title="ctr.docTitle">
+<main>
+<div class="topbar">
+  <span class="badge" data-i18n="common.badge">Rootstock testnet · chain 31</span>
+  <span class="lang" role="group" aria-label="Language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ja">日本語</button></span>
+</div>
+<header>
+  <h1 data-i18n="ctr.h1">Contractor: evidence, milestones, payment</h1>
+  <p data-i18n="ctr.intro"></p>
+</header>
+<p class="pages" id="pageLinks"></p>
+<div class="next"><b data-i18n="common.next">Next step:</b> <span id="nextText"></span></div>
+
+<section>
+  <h2><span class="step">1</span><span data-i18n="wallet.h">Wallet</span></h2>
+  <div class="row">
+    <button id="connectBtn" data-i18n="wallet.connect">Connect MetaMask</button>
+    <button id="refreshBtn" class="secondary hidden" data-i18n="wallet.refresh">Refresh</button>
+  </div>
+  <dl class="kv hidden" id="walletInfo" style="margin-top:12px">
+    <dt data-i18n="wallet.address">Address</dt><dd class="mono" id="addr"></dd>
+    <dt data-i18n="wallet.gas">tRBTC (gas)</dt><dd id="rbtc"></dd>
+    <dt data-i18n="wallet.inWallet">USDRIF in your wallet</dt><dd id="usdrif"></dd>
+    <dt data-i18n="ctr.lockedForYou">USDRIF in escrow for your jobs</dt><dd id="locked">-</dd>
+    <dt data-i18n="wallet.waiting">USDRIF waiting for you to withdraw</dt><dd id="creditTop">-</dd>
+  </dl>
+  <p class="hint hidden" id="fundsHint" data-i18n="ctr.fundsHint"></p>
+  <p class="hint" data-i18n-html="wallet.faucet"></p>
+  <details>
+    <summary data-i18n="warn.h">Before you confirm in MetaMask: what you should see</summary>
+    <div data-i18n-html="warn.bodyCtr"></div>
+  </details>
+  <div id="walletMsg"></div>
+</section>
+
+<section>
+  <h2><span class="step">2</span><span data-i18n="ctr.casesH">Your cases and jobs</span></h2>
+  <div class="row"><button id="myCasesBtn" class="secondary" data-i18n="case.myCases">Show my cases (sign in)</button></div>
+  <div class="joblist" id="caseList"></div>
+  <div class="joblist" id="jobList"></div>
+  <div id="listMsg"></div>
+</section>
+
+<section id="caseBox" class="hidden">
+  <h2><span class="step">3</span><span data-i18n="ctr.checklistH">Agreed checklist</span></h2>
+  <dl class="kv">
+    <dt data-i18n="case.case">Case</dt><dd><span id="cvTitle"></span> <span class="mono hint" id="cvId"></span></dd>
+    <dt data-i18n="role.client">Client</dt><dd class="mono" id="cvClient"></dd>
+    <dt data-i18n="role.contractor">Contractor</dt><dd class="mono" id="cvContractor"></dd>
+    <dt data-i18n="case.checklistHash">Checklist hash</dt><dd class="mono" id="cvHash"></dd>
+    <dt data-i18n="case.signatures">Signatures</dt><dd id="cvSigs"></dd>
+  </dl>
+  <details open id="ruleBox"><summary data-i18n="case.ruleH">Acceptance rule</summary><p class="quote" id="cvRule"></p><div id="cvChecklist"></div></details>
+  <button id="signBtn" class="hidden" data-i18n="ctr.sign">Sign the checklist (signature only, no gas)</button>
+  <div id="signMsg"></div>
+</section>
+
+<section id="msBox" class="hidden">
+  <h2><span class="step">4</span><span data-i18n="ctr.msH">Milestones: evidence per item, then submit</span></h2>
+  <p class="hint" style="margin-top:0" data-i18n="ctr.msHint"></p>
+  <div id="msList"></div>
+  <div id="msMsg"></div>
+</section>
+
+<section>
+  <h2><span class="step">5</span><span data-i18n="ctr.payH">Payment: withdraw to your wallet</span></h2>
+  <dl class="kv"><dt data-i18n="wallet.waiting">Waiting for you to withdraw</dt><dd id="credit">-</dd></dl>
+  <button id="withdrawBtn" disabled data-i18n="wd.btn">Withdraw USDRIF</button>
+  <p class="hint" data-i18n-html="wd.stagesCtr"></p>
+  <div id="withdrawMsg"></div>
+</section>
+
+<footer>Predge · <a href="https://predge.io" target="_blank" rel="noopener">predge.io</a> · <span data-i18n="common.testnetOnly">testnet only, no real money</span> · <a href="glossary.html" data-i18n="common.glossary">Glossary EN/JA</a></footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" integrity="sha384-6Zl0Pc8zjSz8KvmNeXRvUQgY4ryFb+BwDvKCmLYcBME0joAaru491tQgi9B7zsMM" crossorigin="anonymous"></script>
+<script type="module">
+import { ethers, core, $, params, CFG, jobR, tokenR, evR, read, STATE, t, bindLangSwitch, onLang, fmtTok, fmtRbtc, esc, txLink, addrLink, TZ, fmtTime, left, show, explain,
+  W, connectWallet, isMe, txOpts, waitFor, api, signAndPost, itemStatusBadge, bindFileOpen, itemHistory, itemSpec, chainJobs, jobStateText, devBanner, lc, JOB_ABI, EV_ABI, MAX_FILE_BYTES } from "./pilot.js";
+
+let st = null, cj = null, credit = 0n, myJobs = [];
+
+function pageLinks() {
+  const keep = new URLSearchParams();
+  for (const k of ["rpc", "escrow", "evaluator", "lang"]) if (params.get(k)) keep.set(k, params.get(k));
+  if (st) keep.set("case", st.caseId);
+  const q = keep.toString() ? "?" + keep : "";
+  $("pageLinks").innerHTML = `<a href="job2.html${q}">${esc(t("nav.client"))}</a> · <b>${esc(t("nav.contractor"))}</b> · <a href="review.html${q}">${esc(t("nav.reviewer"))}</a>`;
+}
+
+async function connect() {
+  show("walletMsg");
+  try {
+    await connectWallet();
+    $("connectBtn").textContent = t("wallet.connected");
+    $("connectBtn").disabled = true;
+    $("refreshBtn").classList.remove("hidden");
+    $("walletInfo").classList.remove("hidden");
+    await refreshWallet();
+    if (params.get("case")) await openCase(params.get("case"));
+  } catch (e) { show("walletMsg", "err", e.html ? t("err.noMetaMask") : explain(e)); }
+  updateNext();
+}
+async function refreshWallet() {
+  if (!W.account) return;
+  const [rbtc, bal, c, count] = await Promise.all([read.getBalance(W.account), tokenR.balanceOf(W.account), jobR.credit(W.account), jobR.jobCount()]);
+  credit = c;
+  $("addr").innerHTML = addrLink(W.account);
+  $("rbtc").textContent = fmtRbtc(rbtc);
+  $("usdrif").textContent = fmtTok(bal);
+  $("creditTop").textContent = $("credit").textContent = fmtTok(c);
+  $("withdrawBtn").disabled = c === 0n;
+  if (rbtc === 0n) show("walletMsg", "err", t("err.noGasWallet"));
+  const ids = [];
+  for (let i = Number(count); i >= 1 && i > Number(count) - 100; i--) ids.push(i);
+  const jobs = await Promise.all(ids.map((i) => jobR.getJob(i).then((j) => ({ i, j }))));
+  myJobs = jobs.filter(({ j }) => isMe(j.provider));
+  const locked = myJobs.filter(({ j }) => [1, 2].includes(Number(j.state))).reduce((s, { j }) => s + j.escrow, 0n);
+  $("locked").textContent = fmtTok(locked);
+  $("fundsHint").classList.remove("hidden");
+  $("jobList").innerHTML = myJobs.length ? `<p class="hint">${esc(t("ctr.yourJobs"))}</p>` + myJobs.map(({ i, j }) => `<span class="pill">#${i} · ${esc(t("jshort." + STATE[Number(j.state)]))} · ${esc(fmtTok(j.escrow || 0n))}</span> `).join("") : "";
+  updateNext();
+}
+async function listCases() {
+  show("listMsg");
+  try {
+    const r = await api.list();
+    $("caseList").innerHTML = r.cases.length ? r.cases.map((c) => `<button class="secondary" data-case="${c.caseId}">${esc(c.title)} · ${esc(t("role." + c.role))} · ${esc(fmtTime(c.createdAt).local)}</button>`).join("") : `<p class="hint">${esc(t("case.noCases"))}</p>`;
+    $("caseList").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => openCase(b.dataset.case)));
+  } catch (e) { show("listMsg", "err", explain(e)); }
+}
+async function openCase(id) {
+  try {
+    const r = await api.getCase(id);
+    st = core.deriveCase(r.state.records);
+    cj = await chainJobs(st);
+    const u = new URL(location.href); u.searchParams.set("case", id); history.replaceState(null, "", u);
+    render();
+    pageLinks();
+  } catch (e) { show("listMsg", "err", explain(e)); }
+  updateNext();
+}
+
+function render() {
+  if (!st) return;
+  $("caseBox").classList.remove("hidden");
+  $("msBox").classList.remove("hidden");
+  $("cvTitle").textContent = st.checklist.title;
+  $("cvId").textContent = st.caseId;
+  $("cvClient").innerHTML = addrLink(st.client);
+  $("cvContractor").innerHTML = addrLink(st.contractor) + (isMe(st.contractor) ? ` (${esc(t("common.you"))})` : "");
+  $("cvHash").textContent = st.checklistHash;
+  $("cvRule").textContent = st.checklist.rule;
+  $("cvSigs").innerHTML = `${esc(t("role.client"))} ✓ · ${esc(t("role.contractor"))} ${st.signedBy.contractor ? "✓" : `<b>${esc(t("case.notYet"))}</b>`}`;
+  const mine = isMe(st.contractor);
+  $("signBtn").classList.toggle("hidden", !!st.signedBy.contractor || !mine);
+  $("ruleBox").open = !st.signedBy.contractor;
+  $("cvChecklist").innerHTML = st.milestones.map((m) => `<h3>${esc(m.key)} · ${esc(m.label)} · ${esc(m.amount)} USDRIF</h3><table class="cl"><thead><tr><th>${esc(t("cl.item"))}</th><th>${esc(t("cl.evidence"))}</th><th>${esc(t("cl.viewpoint"))}</th><th>${esc(t("cl.timing"))}</th></tr></thead><tbody>${m.itemIds.map((id) => { const it = st.items[id]; return `<tr><td data-l="${esc(t("cl.item"))}">${esc(it.title)}</td><td data-l="${esc(t("cl.evidence"))}">${esc(it.evidence)}</td><td data-l="${esc(t("cl.viewpoint"))}">${esc(it.viewpoint)}</td><td data-l="${esc(t("cl.timing"))}">${esc(it.timing)}</td></tr>`; }).join("")}</tbody></table>`).join("");
+
+  $("msList").innerHTML = st.milestones.map((m) => {
+    const c = cj.jobs[m.key];
+    const items = m.itemIds.map((id) => st.items[id]);
+    const missing = items.filter((it) => !it.uploads.length).length;
+    const notApproved = items.filter((it) => it.status !== "approved").length;
+    const pkg = c && c.state !== "Open" ? m.packages.find((p) => p.payload.manifestSha256 === c.j.deliverable) : null;
+    let head = `<div class="ms-head"><b>${esc(m.key)} · ${esc(m.label)}</b><span>${esc(m.amount)} USDRIF</span></div>`;
+    head += `<p class="hint">${m.job ? esc(t("ms.job", { id: m.job.jobId })) + " · " : ""}${esc(m.job ? jobStateText(c, cj.now) : t("ctr.notFunded"))}</p>`;
+    if (c) head += deadlines(c);
+    const itemsHtml = items.map((it) => {
+      const objected = st.objections.some((o) => (o.payload.itemIds || []).includes(it.id) && o.payload.jobId === m.job?.jobId);
+      return `<div class="item${it.status === "need_more" || objected ? " flag" : ""}"><div class="item-head"><b>${esc(it.title)}</b>${itemStatusBadge(it.status)}</div>${itemSpec(it)}${itemHistory(st, it)}
+      ${mine && st.signedBy.contractor ? `<details ${it.uploads.length && it.status !== "need_more" ? "" : "open"}><summary>${esc(t("ctr.addEvidence"))}</summary>
+        <input type="file" multiple data-files="${it.id}" accept="image/*,application/pdf,video/mp4,text/plain"><input data-enote="${it.id}" placeholder="${esc(t("ctr.notePh"))}">
+        <button class="small" data-upload="${it.id}" data-ms="${m.key}">${esc(t("ctr.uploadBtn"))}</button><p class="hint">${esc(t("ctr.uploadHint", { mb: MAX_FILE_BYTES / 1048576 }))}</p></details>` : ""}</div>`;
+    }).join("");
+    let actions = "";
+    if (mine && c?.state === "Open") {
+      actions = missing ? `<p class="hint">${esc(t("ctr.missing", { n: missing }))}</p>` : `${notApproved ? `<p class="msg info">${esc(t("ctr.notApproved", { n: notApproved }))}</p>` : `<p class="hint">${esc(t("ctr.allApproved"))}</p>`}<button data-submit="${m.key}">${esc(t("ctr.submit", { key: m.key }))}</button>`;
+    }
+    if (c?.state === "Submitted" && !c.objected && cj.now >= c.objEnd && pkg) actions += `<p class="hint">${esc(t("ctr.silenceReady"))}</p><button data-release="${m.key}">${esc(t("ctr.release", { key: m.key }))}</button>`;
+    if (c && c.state !== "Open") actions += pkg ? `<p class="hint">${esc(t("ctr.pkgOk"))} <span class="mono">${esc(pkg.payload.manifestSha256)}</span></p>` : `<p class="msg err">${esc(t("ctr.pkgMissing"))}</p>`;
+    if (c?.objected) actions += objectionBlock(m, c);
+    if (c?.state === "Completed") actions += `<p class="msg ok">${esc(t("ctr.paid", { amount: m.amount }))}</p>`;
+    if (["Rejected", "Expired"].includes(c?.state)) actions += `<p class="msg err">${esc(t("ctr.refunded"))}</p>`;
+    return `<div class="ms">${head}${itemsHtml}${actions}</div>`;
+  }).join("");
+}
+function deadlines(c) {
+  let ts, what;
+  if (c.state === "Open") { ts = Number(c.j.expiredAt); what = t("dl.ctrSubmit"); }
+  else if (c.state === "Submitted" && !c.objected) { ts = c.objEnd; what = t("dl.ctrObjection"); }
+  else return "";
+  const f = fmtTime(ts);
+  return `<div class="deadline"><b>${f.utc} UTC · ${esc(f.local)} (${esc(TZ)}) · ${esc(left(ts - cj.now))}</b>${esc(what)}</div>`;
+}
+function objectionBlock(m, c) {
+  const recs = st.objections.filter((o) => o.payload.jobId === m.job.jobId);
+  const rec = recs.find((o) => o.payload.textHash === c.o.hash);
+  let h = `<h3>${esc(t("ctr.objH"))}</h3>`;
+  if (rec) {
+    h += `<p class="hint">${esc(fmtTime(rec.issuedAt).local)} · ${esc(t("obj.hashMatch"))}</p><p class="quote">${esc(rec.payload.text)}</p>`;
+    if (rec.payload.itemIds?.length) h += `<p class="hint">${esc(t("obj.itemsCited"))} ${rec.payload.itemIds.map((i) => esc(st.items[i]?.title || i)).join(", ")}</p>`;
+  } else h += `<p class="msg err">${esc(t("obj.noText"))}</p>`;
+  for (const a of st.answers.filter((a) => a.payload.jobId === m.job.jobId)) h += `<p class="hint">${esc(t("ctr.yourAnswer"))} · ${esc(fmtTime(a.issuedAt).local)}</p><p class="quote">${esc(a.payload.text)}</p>`;
+  const dec = st.decisions.find((d) => d.payload.jobId === m.job.jobId);
+  if (dec) h += `<p class="hint">${esc(t(dec.payload.payProvider ? "dec.paid" : "dec.refunded"))}</p><p class="quote">${esc(dec.payload.text)}</p>`;
+  if (isMe(st.contractor) && !c.o.resolved) h += `<label>${esc(t("ctr.answerLabel"))}</label><textarea data-answer="${m.key}" placeholder="${esc(t("ctr.answerPh"))}"></textarea><button class="small" data-sendanswer="${m.key}">${esc(t("ctr.answerBtn"))}</button>`;
+  return h;
+}
+
+// ---------------------------------------------------------------- actions
+async function signChecklist() {
+  show("signMsg");
+  try {
+    show("signMsg", "info", t("sig.confirm"));
+    await signAndPost(st.caseId, "checklist.sign", { checklistHash: st.checklistHash }, t("sum.sign", { title: st.checklist.title.slice(0, 80) }));
+    show("signMsg", "ok", t("ctr.signed"));
+    await openCase(st.caseId);
+  } catch (e) { show("signMsg", "err", explain(e)); }
+}
+async function upload(itemId, msKey, btn) {
+  show("msMsg");
+  btn.disabled = true;
+  try {
+    const files = [...$("msList").querySelector(`input[data-files="${itemId}"]`).files];
+    if (!files.length) throw Object.assign(new Error(t("ctr.pickFiles")), { caseApi: true });
+    for (const f of files) if (f.size > MAX_FILE_BYTES) throw Object.assign(new Error(t("up.tooLarge", { name: f.name, mb: MAX_FILE_BYTES / 1048576 })), { caseApi: true });
+    const out = [];
+    for (const [i, f] of files.entries()) {
+      show("msMsg", "info", t("ctr.uploading", { i: i + 1, n: files.length, name: esc(f.name) }));
+      const r = await api.upload(st.caseId, f);
+      out.push({ name: f.name, sha256: r.sha256, size: r.size, type: f.type || "application/octet-stream" });
+    }
+    const note = ($("msList").querySelector(`input[data-enote="${itemId}"]`).value || "").trim();
+    show("msMsg", "info", t("sig.confirm"));
+    await signAndPost(st.caseId, "evidence", { milestone: msKey, itemId, files: out, note }, t("sum.evidence", { item: st.items[itemId].title.slice(0, 80), n: out.length }));
+    show("msMsg", "ok", t("ctr.uploaded", { n: out.length, item: esc(st.items[itemId].title) }));
+    await openCase(st.caseId);
+  } catch (e) { show("msMsg", "err", explain(e)); }
+  btn.disabled = false;
+}
+async function submitPackage(key) {
+  show("msMsg");
+  try {
+    const m = st.milestones.find((x) => x.key === key);
+    const pkg = core.packageFor(st, key);
+    show("msMsg", "info", t("ctr.pkgSign"));
+    await signAndPost(st.caseId, "package", { ...pkg, jobId: m.job.jobId, checklistHash: st.checklistHash }, t("sum.package", { key, id: m.job.jobId }));
+    const manifest = core.manifestOf(st.checklistHash, pkg.itemHashes);
+    const job = new ethers.Contract(CFG.JOB_ADDR, JOB_ABI, W.signer);
+    const id = BigInt(m.job.jobId);
+    show("msMsg", "info", t("ctr.pkgTx"));
+    const tx = await job.submit(id, pkg.manifestSha256, manifest, await txOpts(jobR.submit.estimateGas(id, pkg.manifestSha256, manifest, { from: W.account })));
+    await waitFor(tx, t("tx.submit"), "msMsg");
+    show("msMsg", "ok", t("ctr.submitted", { key, link: txLink(tx.hash) }));
+    await openCase(st.caseId);
+  } catch (e) { show("msMsg", "err", explain(e)); }
+}
+async function release(key) {
+  show("msMsg");
+  try {
+    const m = st.milestones.find((x) => x.key === key);
+    const c = cj.jobs[key];
+    const pkg = m.packages.find((p) => p.payload.manifestSha256 === c.j.deliverable);
+    const ev = new ethers.Contract(st.evaluator, EV_ABI, W.signer);
+    const args = [BigInt(m.job.jobId), st.checklistHash, pkg.payload.itemHashes];
+    const tx = await ev.releaseOnSilence(...args, await txOpts(evR(st.evaluator).releaseOnSilence.estimateGas(...args, { from: W.account })));
+    await waitFor(tx, t("tx.release"), "msMsg");
+    show("msMsg", "ok", t("ctr.released", { key, link: txLink(tx.hash) }));
+    await refreshWallet();
+    await openCase(st.caseId);
+  } catch (e) { show("msMsg", "err", explain(e)); }
+}
+async function answer(key) {
+  show("msMsg");
+  try {
+    const m = st.milestones.find((x) => x.key === key);
+    const text = ($("msList").querySelector(`textarea[data-answer="${key}"]`).value || "").trim();
+    if (!text) throw Object.assign(new Error(t("ctr.answerEmpty")), { caseApi: true });
+    const obj = st.objections.find((o) => o.payload.jobId === m.job.jobId);
+    show("msMsg", "info", t("sig.confirm"));
+    await signAndPost(st.caseId, "answer", { jobId: m.job.jobId, text, itemIds: obj?.payload.itemIds || [] }, t("sum.answer", { id: m.job.jobId }));
+    show("msMsg", "ok", t("ctr.answered"));
+    await openCase(st.caseId);
+  } catch (e) { show("msMsg", "err", explain(e)); }
+}
+async function withdraw() {
+  show("withdrawMsg"); $("withdrawBtn").disabled = true;
+  try {
+    const job = new ethers.Contract(CFG.JOB_ADDR, JOB_ABI, W.signer);
+    show("withdrawMsg", "info", t("wd.confirm"));
+    const tx = await job.withdraw(await txOpts(jobR.withdraw.estimateGas({ from: W.account })));
+    await waitFor(tx, t("tx.withdraw"), "withdrawMsg");
+    show("withdrawMsg", "ok", t("wd.done", { link: txLink(tx.hash) }));
+    await refreshWallet();
+  } catch (e) { show("withdrawMsg", "err", explain(e)); }
+}
+$("msList").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.upload) upload(b.dataset.upload, b.dataset.ms, b);
+  if (b.dataset.submit) submitPackage(b.dataset.submit);
+  if (b.dataset.release) release(b.dataset.release);
+  if (b.dataset.sendanswer) answer(b.dataset.sendanswer);
+});
+bindFileOpen($("msList"), (k, m) => show("msMsg", k, m));
+
+function updateNext() {
+  let s;
+  if (!W.account) s = t("next.connect");
+  else if (credit > 0n) s = t("ctr.next.withdraw", { amount: fmtTok(credit) });
+  else if (!st) s = t("ctr.next.openCase");
+  else if (!isMe(st.contractor)) s = t("ctr.next.notContractor");
+  else if (!st.signedBy.contractor) s = t("ctr.next.sign");
+  else {
+    const ms = st.milestones;
+    const objected = ms.find((m) => cj.jobs[m.key]?.objected && !cj.jobs[m.key].o.resolved && !st.answers.some((a) => a.payload.jobId === m.job.jobId));
+    const needMore = Object.values(st.items).filter((it) => it.status === "need_more");
+    const silent = ms.find((m) => { const c = cj.jobs[m.key]; return c?.state === "Submitted" && !c.objected && cj.now >= c.objEnd; });
+    const ready = ms.find((m) => cj.jobs[m.key]?.state === "Open" && m.itemIds.every((id) => st.items[id].uploads.length));
+    const open = ms.find((m) => cj.jobs[m.key]?.state === "Open");
+    if (objected) s = t("ctr.next.answer", { key: objected.key });
+    else if (needMore.length) s = t("ctr.next.needMore", { items: needMore.map((i) => i.title).join(", ") });
+    else if (silent) s = t("ctr.next.release", { key: silent.key });
+    else if (ready) s = t("ctr.next.submit", { key: ready.key });
+    else if (open) s = t("ctr.next.upload", { key: open.key });
+    else if (ms.some((m) => !m.job)) s = t("ctr.next.waitFunding");
+    else if (ms.every((m) => ["Completed", "Rejected", "Expired"].includes(cj.jobs[m.key]?.state))) s = t("ctr.next.done");
+    else s = t("ctr.next.wait");
+  }
+  $("nextText").textContent = s;
+}
+
+devBanner();
+bindLangSwitch();
+onLang(() => { pageLinks(); render(); updateNext(); if (W.account) { $("connectBtn").textContent = t("wallet.connected"); refreshWallet(); } });
+pageLinks();
+updateNext();
+$("connectBtn").addEventListener("click", connect);
+$("refreshBtn").addEventListener("click", async () => { await refreshWallet(); if (st) await openCase(st.caseId); });
+$("myCasesBtn").addEventListener("click", () => (W.account ? listCases() : show("listMsg", "err", t("err.connectFirst"))));
+$("signBtn").addEventListener("click", signChecklist);
+$("withdrawBtn").addEventListener("click", withdraw);
+if (window.ethereum) window.ethereum.request({ method: "eth_accounts" }).then((a) => { if (a && a.length) connect(); }).catch(() => {});
+</script>
+</body>
+</html>

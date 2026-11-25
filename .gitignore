@@ -6,3 +6,5 @@ node_modules/
 out/
 cache/
 deploy/*.local.json
+.vercel
+app/node_modules/

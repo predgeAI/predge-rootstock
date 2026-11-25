@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Predge Glossary EN/JA</title>
+<link rel="stylesheet" href="pilot.css">
+</head>
+<body>
+<main>
+<div class="topbar"><span class="badge">Rootstock testnet · chain 31</span></div>
+<header>
+  <h1>Glossary · 用語集 (EN / JA)</h1>
+  <p>Terms used on the client, contractor and reviewer pages. Draft for IBUKI's review: please mark any term that is not natural in demolition work. 解体工事の現場で不自然な用語があればご指摘ください。</p>
+</header>
+<section>
+  <table class="cl"><thead><tr><th>English</th><th>日本語</th><th>Note</th></tr></thead><tbody id="rows"></tbody></table>
+</section>
+<footer><a href="job2.html">Client page</a> · <a href="contractor.html">Contractor page</a> · <a href="review.html">Reviewer screen</a></footer>
+</main>
+<script type="module">
+import { GLOSSARY } from "./glossary.js";
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+document.getElementById("rows").innerHTML = GLOSSARY.map((g) => `<tr><td>${esc(g.en)}</td><td>${esc(g.ja)}</td><td>${esc(g.note)}</td></tr>`).join("");
+</script>
+</body>
+</html>

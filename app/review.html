@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Predge Case Review</title>
+<meta name="description" content="Reviewer screen: agreed checklist, evidence per item and approval history in one place; decide an objected milestone. Rootstock testnet.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f26b1d'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='17' font-weight='700' text-anchor='middle' fill='white'%3EP%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="pilot.css">
+</head>
+<body data-title="rev.docTitle">
+<main>
+<div class="topbar">
+  <span class="badge" data-i18n="common.badge">Rootstock testnet · chain 31</span>
+  <span class="lang" role="group" aria-label="Language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ja">日本語</button></span>
+</div>
+<header>
+  <h1 data-i18n="rev.h1">Case review</h1>
+  <p data-i18n="rev.intro"></p>
+</header>
+<p class="pages" id="pageLinks"></p>
+<div class="next"><b data-i18n="common.next">Next step:</b> <span id="nextText"></span></div>
+
+<section>
+  <h2><span class="step">1</span><span data-i18n="wallet.h">Wallet</span></h2>
+  <div class="row">
+    <button id="connectBtn" data-i18n="wallet.connect">Connect MetaMask</button>
+    <button id="myCasesBtn" class="secondary" data-i18n="case.myCases">Show my cases (sign in)</button>
+  </div>
+  <dl class="kv hidden" id="walletInfo" style="margin-top:12px"><dt data-i18n="wallet.address">Address</dt><dd class="mono" id="addr"></dd></dl>
+  <div class="joblist" id="caseList"></div>
+  <div id="walletMsg"></div>
+</section>
+
+<section id="overview" class="hidden">
+  <h2><span class="step">2</span><span data-i18n="rev.caseH">Case and on-chain checks</span></h2>
+  <dl class="kv">
+    <dt data-i18n="case.case">Case</dt><dd><span id="cvTitle"></span> <span class="mono hint" id="cvId"></span></dd>
+    <dt data-i18n="role.client">Client</dt><dd class="mono" id="cvClient"></dd>
+    <dt data-i18n="role.contractor">Contractor</dt><dd class="mono" id="cvContractor"></dd>
+    <dt data-i18n="role.reviewer">Reviewer</dt><dd class="mono" id="cvReviewer"></dd>
+    <dt data-i18n="case.checklistHash">Checklist hash</dt><dd class="mono" id="cvHash"></dd>
+    <dt data-i18n="case.signatures">Signatures</dt><dd id="cvSigs"></dd>
+  </dl>
+  <details><summary data-i18n="case.ruleH">Acceptance rule (signed)</summary><p class="quote" id="cvRule"></p></details>
+  <div id="checks"></div>
+</section>
+
+<section id="objBox" class="hidden">
+  <h2><span class="step">3</span><span data-i18n="rev.objH">Objections and decisions</span></h2>
+  <div id="objList"></div>
+  <div id="objMsg"></div>
+</section>
+
+<section id="itemsBox" class="hidden">
+  <h2><span class="step">4</span><span data-i18n="rev.itemsH">Checklist, evidence per item, approval history</span></h2>
+  <p class="hint" style="margin-top:0" data-i18n="rev.itemsHint"></p>
+  <div id="itemsList"></div>
+  <div id="itemsMsg"></div>
+</section>
+
+<section id="tlBox" class="hidden">
+  <h2><span class="step">5</span><span data-i18n="rev.tlH">Full record timeline</span></h2>
+  <ol class="hist" id="timeline"></ol>
+</section>
+
+<footer>Predge · <a href="https://predge.io" target="_blank" rel="noopener">predge.io</a> · <span data-i18n="common.testnetOnly">testnet only, no real money</span> · <a href="glossary.html" data-i18n="common.glossary">Glossary EN/JA</a></footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" integrity="sha384-6Zl0Pc8zjSz8KvmNeXRvUQgY4ryFb+BwDvKCmLYcBME0joAaru491tQgi9B7zsMM" crossorigin="anonymous"></script>
+<script type="module">
+import { ethers, core, $, params, CFG, jobR, evR, read, t, bindLangSwitch, onLang, fmtTok, esc, txLink, addrLink, TZ, fmtTime, left, show, explain,
+  W, connectWallet, isMe, txOpts, waitFor, api, signAndPost, itemStatusBadge, bindFileOpen, itemHistory, itemSpec, chainJobs, jobStateText, devBanner, recordWho, lc, EV_ABI } from "./pilot.js";
+
+let st = null, cj = null, windowS = 0;
+
+function pageLinks() {
+  const keep = new URLSearchParams();
+  for (const k of ["rpc", "escrow", "evaluator", "lang"]) if (params.get(k)) keep.set(k, params.get(k));
+  if (st) keep.set("case", st.caseId);
+  const q = keep.toString() ? "?" + keep : "";
+  $("pageLinks").innerHTML = `<a href="job2.html${q}">${esc(t("nav.client"))}</a> · <a href="contractor.html${q}">${esc(t("nav.contractor"))}</a> · <b>${esc(t("nav.reviewer"))}</b>`;
+}
+async function connect() {
+  show("walletMsg");
+  try {
+    await connectWallet();
+    $("connectBtn").textContent = t("wallet.connected");
+    $("connectBtn").disabled = true;
+    $("walletInfo").classList.remove("hidden");
+    $("addr").innerHTML = addrLink(W.account);
+    if (params.get("case")) await openCase(params.get("case"));
+  } catch (e) { show("walletMsg", "err", e.html ? t("err.noMetaMask") : explain(e)); }
+  updateNext();
+}
+async function listCases() {
+  show("walletMsg");
+  try {
+    const r = await api.list();
+    $("caseList").innerHTML = r.cases.length ? r.cases.map((c) => `<button class="secondary" data-case="${c.caseId}">${esc(c.title)} · ${esc(t("role." + c.role))} · ${esc(fmtTime(c.createdAt).local)}</button>`).join("") : `<p class="hint">${esc(t("case.noCases"))}</p>`;
+    $("caseList").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => openCase(b.dataset.case)));
+  } catch (e) { show("walletMsg", "err", explain(e)); }
+}
+async function openCase(id) {
+  try {
+    const r = await api.getCase(id);
+    st = core.deriveCase(r.state.records);
+    [cj, windowS] = await Promise.all([chainJobs(st), evR(st.evaluator).evaluationWindow().then(Number)]);
+    const u = new URL(location.href); u.searchParams.set("case", id); history.replaceState(null, "", u);
+    await render();
+    pageLinks();
+  } catch (e) { show("walletMsg", "err", explain(e)); }
+  updateNext();
+}
+
+async function render() {
+  if (!st) return;
+  for (const id of ["overview", "objBox", "itemsBox", "tlBox"]) $(id).classList.remove("hidden");
+  $("cvTitle").textContent = st.checklist.title;
+  $("cvId").textContent = st.caseId;
+  $("cvClient").innerHTML = addrLink(st.client);
+  $("cvContractor").innerHTML = addrLink(st.contractor);
+  $("cvReviewer").innerHTML = addrLink(st.reviewer) + (isMe(st.reviewer) ? ` (${esc(t("common.you"))})` : "");
+  $("cvHash").textContent = st.checklistHash;
+  $("cvRule").textContent = st.checklist.rule;
+  $("cvSigs").innerHTML = `${esc(t("role.client"))} ✓ · ${esc(t("role.contractor"))} ${st.signedBy.contractor ? "✓" : esc(t("case.notYet"))}`;
+  // on-chain checks: each milestone job commits to this checklist; the submitted manifest equals a package in the record
+  const ev = evR(st.evaluator);
+  const rows = [];
+  for (const m of st.milestones) {
+    const c = cj.jobs[m.key];
+    if (!c) { rows.push(`<li><b>${esc(m.key)}</b> · ${esc(t("ms.noJob"))}</li>`); continue; }
+    const spec = await ev.specHashFor(st.checklistHash, m.itemIds.length);
+    const specOk = lc(spec) === lc(c.j.specHash);
+    const pkg = c.state === "Open" ? null : m.packages.find((p) => p.payload.manifestSha256 === c.j.deliverable);
+    rows.push(`<li><b>${esc(m.key)}</b> · ${esc(t("ms.job", { id: c.id }))} · ${esc(fmtTok(c.j.escrow))} · ${esc(jobStateText(c, cj.now))}<br>
+      ${specOk ? "✓" : "✗"} ${esc(t("rev.specCheck"))}${c.state === "Open" ? "" : `<br>${pkg ? "✓" : "✗"} ${esc(t("rev.pkgCheck"))}`}</li>`);
+  }
+  $("checks").innerHTML = `<h3>${esc(t("rev.checksH"))}</h3><ol class="hist">${rows.join("")}</ol>`;
+  // objections
+  const objected = st.milestones.filter((m) => cj.jobs[m.key]?.objected);
+  $("objList").innerHTML = objected.length ? objected.map((m) => objectionCard(m, cj.jobs[m.key])).join("") : `<p class="hint">${esc(t("rev.noObjections"))}</p>`;
+  // items
+  const cited = new Set(st.objections.flatMap((o) => o.payload.itemIds || []));
+  $("itemsList").innerHTML = st.milestones.map((m) => {
+    const c = cj.jobs[m.key];
+    const pkg = c && c.state !== "Open" ? m.packages.find((p) => p.payload.manifestSha256 === c.j.deliverable) : null;
+    return `<h3>${esc(m.key)} · ${esc(m.label)} · ${esc(m.amount)} USDRIF</h3>` + m.itemIds.map((id, i) => {
+      const it = st.items[id];
+      return `<div class="item${cited.has(id) ? " flag" : ""}" id="item-${id}"><div class="item-head"><b>${esc(it.title)}</b>${itemStatusBadge(it.status)}</div>${itemSpec(it)}${itemHistory(st, it)}
+        ${cited.has(id) ? `<p class="hint"><b>${esc(t("item.objected"))}</b></p>` : ""}${pkg ? `<p class="hint">${esc(t("rev.itemHash"))} <span class="mono">${esc(pkg.payload.itemHashes[i])}</span></p>` : ""}</div>`;
+    }).join("");
+  }).join("") + `<p class="hint">${esc(t("item.hashNote"))}</p>`;
+  // timeline
+  $("timeline").innerHTML = st.records.map((r) => `<li>${esc(fmtTime(r.issuedAt).local)} · <b>${esc(t("kind." + r.kind))}</b> · ${esc(recordWho(st, r.signer))}${r.payload?.itemId ? ` · ${esc(st.items[r.payload.itemId]?.title || r.payload.itemId)}` : ""}${r.payload?.milestone ? ` · ${esc(r.payload.milestone)}` : ""}<br><span class="mono hint">${esc(r.hash)}</span></li>`).join("");
+}
+function objectionCard(m, c) {
+  const rec = st.objections.find((o) => o.payload.jobId === m.job.jobId && o.payload.textHash === c.o.hash);
+  let h = `<div class="item flag"><div class="item-head"><b>${esc(m.key)} · ${esc(t("ms.job", { id: m.job.jobId }))} · ${esc(m.amount)} USDRIF</b><span class="pill">${esc(jobStateText(c, cj.now))}</span></div>`;
+  h += `<p class="hint">${esc(t("rev.objFiled", { at: fmtTime(c.o.at).local }))} · <span class="mono">${esc(c.o.hash)}</span></p>`;
+  if (rec) {
+    h += `<p class="hint">✓ ${esc(t("obj.hashMatch"))}</p><p class="quote">${esc(rec.payload.text)}</p>`;
+    if (rec.payload.itemIds?.length) h += `<p class="hint">${esc(t("obj.itemsCited"))} ${rec.payload.itemIds.map((i) => `<a href="#item-${esc(i)}">${esc(st.items[i]?.title || i)}</a>`).join(", ")}</p>`;
+  } else h += `<p class="msg err">${esc(t("obj.noText"))}</p>`;
+  for (const a of st.answers.filter((a) => a.payload.jobId === m.job.jobId)) h += `<p class="hint">${esc(t("rev.answer"))} · ${esc(fmtTime(a.issuedAt).local)}</p><p class="quote">${esc(a.payload.text)}</p>`;
+  const dec = st.decisions.find((d) => d.payload.jobId === m.job.jobId);
+  if (dec) h += `<p class="hint">${esc(t(dec.payload.payProvider ? "dec.paid" : "dec.refunded"))} · ${esc(fmtTime(dec.issuedAt).local)}</p><p class="quote">${esc(dec.payload.text)}</p>`;
+  if (!c.o.resolved && c.state === "Submitted") {
+    const end = Number(c.j.submittedAt) + windowS;
+    h += `<div class="deadline"><b>${fmtTime(end).utc} UTC · ${esc(fmtTime(end).local)} (${esc(TZ)}) · ${esc(left(end - cj.now))}</b>${esc(t("dl.reviewerOwn"))}</div>`;
+    if (isMe(st.reviewer)) h += `<label>${esc(t("rev.decisionLabel"))}</label><textarea data-dtext="${m.key}" placeholder="${esc(t("rev.decisionPh"))}"></textarea>
+      <div class="row"><button class="small" data-pay="${m.key}">${esc(t("rev.pay"))}</button><button class="small secondary" data-refund="${m.key}">${esc(t("rev.refund"))}</button></div>`;
+  }
+  return h + `</div>`;
+}
+async function decide(key, payProvider) {
+  show("objMsg");
+  try {
+    const m = st.milestones.find((x) => x.key === key);
+    const text = ($("objList").querySelector(`textarea[data-dtext="${key}"]`).value || "").trim();
+    if (!text) throw Object.assign(new Error(t("rev.decisionEmpty")), { caseApi: true });
+    const h = core.textHash(text);
+    const obj = st.objections.find((o) => o.payload.jobId === m.job.jobId);
+    show("objMsg", "info", t("sig.confirm"));
+    await signAndPost(st.caseId, "decision", { jobId: m.job.jobId, payProvider, text, decisionHash: h, itemIds: obj?.payload.itemIds || [] }, t(payProvider ? "sum.decPay" : "sum.decRefund", { id: m.job.jobId }));
+    const ev = new ethers.Contract(st.evaluator, EV_ABI, W.signer);
+    const args = [BigInt(m.job.jobId), payProvider, h];
+    show("objMsg", "info", t("rev.confirmTx"));
+    const tx = await ev.resolve(...args, await txOpts(evR(st.evaluator).resolve.estimateGas(...args, { from: W.account })));
+    await waitFor(tx, t("tx.resolve"), "objMsg");
+    show("objMsg", "ok", t(payProvider ? "rev.donePay" : "rev.doneRefund", { link: txLink(tx.hash) }));
+    await openCase(st.caseId);
+  } catch (e) { show("objMsg", "err", explain(e)); }
+}
+$("objList").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.pay) decide(b.dataset.pay, true);
+  if (b.dataset.refund) decide(b.dataset.refund, false);
+});
+bindFileOpen($("itemsList"), (k, m) => show("itemsMsg", k, m));
+
+function updateNext() {
+  let s;
+  if (!W.account) s = t("next.connect");
+  else if (!st) s = t("rev.next.open");
+  else if (!isMe(st.reviewer)) s = t("rev.next.notReviewer");
+  else {
+    const pending = st.milestones.find((m) => cj.jobs[m.key]?.objected && !cj.jobs[m.key].o.resolved && cj.jobs[m.key].state === "Submitted");
+    s = pending ? t("rev.next.decide", { key: pending.key }) : t("rev.next.nothing");
+  }
+  $("nextText").textContent = s;
+}
+
+devBanner();
+bindLangSwitch();
+onLang(() => { pageLinks(); render(); updateNext(); if (W.account) $("connectBtn").textContent = t("wallet.connected"); });
+pageLinks();
+updateNext();
+$("connectBtn").addEventListener("click", connect);
+$("myCasesBtn").addEventListener("click", () => (W.account ? listCases() : show("walletMsg", "err", t("err.connectFirst"))));
+if (window.ethereum) window.ethereum.request({ method: "eth_accounts" }).then((a) => { if (a && a.length) connect(); }).catch(() => {});
+</script>
+</body>
+</html>

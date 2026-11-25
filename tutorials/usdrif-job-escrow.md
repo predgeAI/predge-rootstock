@@ -72,3 +72,48 @@ node script/usdrif-job.mjs e2e --rpc http://127.0.0.1:8545
   developer docs show the mint call (`mintStableTokenVendors`, after approving RIF), but we have not confirmed
   the current testnet app URL or testnet contract addresses, so check the RIF on Chain docs before relying on
   a specific route.
+
+## Contractor pilot: checklist, item evidence, three milestones (pages)
+
+Three pages share one private case record (`app/api/case.js`, a Vercel Function with a private Vercel Blob store):
+
+| Page | Who | What |
+|---|---|---|
+| `app/job2.html` | client | agree the checklist (items, evidence, viewpoint, timing), fund one job per milestone (approve, then create), approve each item or ask for more evidence, object (the text goes to the case record, its keccak256 on-chain), withdraw a refund |
+| `app/contractor.html` | contractor | sign the checklist, upload evidence per item, submit each milestone, answer an objection, release after a silent objection period, withdraw |
+| `app/review.html` | reviewer | checklist + evidence per item + approval history + objection + answer in one place, on-chain checks, decide (pay / refund) |
+
+All three have an EN / 日本語 switch; the terms are in `docs/glossary-ja.md` (generated from `app/glossary.js`).
+
+How it maps to the unchanged contracts (no Solidity change):
+
+- the agreed checklist is canonical JSON; `checklistHash = keccak256(canonical JSON)`;
+- milestone job k is created with `specHash = evaluator.specHashFor(checklistHash, number of items of milestone k)`;
+- every evidence upload and every item review is a record signed with EIP-712 (no gas) and stored off-chain;
+  `itemHash = keccak256(canonical({caseId, itemId, records: [hashes of that item's evidence and review records]}))`;
+- the contractor submits `manifest = abi.encode(checklistHash, itemHashes)` with `deliverable = sha256(manifest)`,
+  so `releaseOnSilence(jobId, checklistHash, itemHashes)` works as before;
+- item approvals move no money; money moves per milestone job only (B2C 30 / 20 / 50 = three jobs).
+
+Access: every read needs a session signed by the wallet (EIP-712, no gas). Only the client, the contractor and the
+reviewer of the case's objection contract can read the case and its files; the server checks parties and roles
+on every write and checks job links against the chain (`client`, `provider`, `evaluator`, `specHash`, amount).
+
+### Local end-to-end run (fork, no testnet writes)
+
+```bash
+forge build
+anvil --fork-url https://public-node.testnet.rsk.co --chain-id 31 --base-fee 0 &
+node script/pilot-fork.mjs setup        # fresh escrow + evaluator on the fork, reviewer = anvil #3, 200 USDRIF to anvil #1
+node script/pilot-dev-server.mjs --fork deploy/pilot.local.json --store /tmp/cases   # http://localhost:8787
+# open the printed URL; &devwallet=1 client, =2 contractor, =3 reviewer (anvil dev accounts, localhost only)
+node script/pilot-fork.mjs warp --days 11   # pass the objection period
+```
+
+`?rpc=`, `?escrow=`, `?evaluator=` and `?devwallet=` are honoured only on localhost.
+
+### Deploy (preview)
+
+The Vercel project root is `app/` (`cd app && vercel deploy`). The function needs `BLOB_READ_WRITE_TOKEN` from a
+private Blob store connected to the project (`vercel blob create-store <name> --access private`).
+Optional env: `RSK_RPC`, `PILOT_ESCROW`, `PILOT_EVALUATOR`.

@@ -4,124 +4,136 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Predge USDRIF Job</title>
-<meta name="description" content="Create a USDRIF escrow job, file an objection and withdraw a refund on Rootstock testnet.">
+<meta name="description" content="Client page: agree a checklist, fund milestone jobs in USDRIF, review evidence per item, object, withdraw. Rootstock testnet.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f26b1d'/%3E%3Ctext x='16' y='22' font-family='Arial' font-size='17' font-weight='700' text-anchor='middle' fill='white'%3EP%3C/text%3E%3C/svg%3E">
-<style>
-:root {
-  --bg: #f6f5f2; --card: #ffffff; --ink: #1b1c1f; --muted: #686b73; --line: #e3e1dc;
-  --accent: #f26b1d; --accent-ink: #ffffff; --ok: #157a4a; --ok-bg: #e7f5ed; --warn: #9a5b00; --warn-bg: #fff4e0;
-  --err: #b3261e; --err-bg: #fdecea; --code: #f1f0ec;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #121316; --card: #1b1d21; --ink: #eceae6; --muted: #9a9ca3; --line: #2c2f35;
-    --accent: #ff7a2e; --accent-ink: #111; --ok: #5fd39a; --ok-bg: #13301f; --warn: #f0b45a; --warn-bg: #33270f;
-    --err: #ff8a80; --err-bg: #3a1714; --code: #24272c;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #121316; --card: #1b1d21; --ink: #eceae6; --muted: #9a9ca3; --line: #2c2f35;
-  --accent: #ff7a2e; --accent-ink: #111; --ok: #5fd39a; --ok-bg: #13301f; --warn: #f0b45a; --warn-bg: #33270f;
-  --err: #ff8a80; --err-bg: #3a1714; --code: #24272c;
-}
-* { box-sizing: border-box; }
-html, body { margin: 0; }
-body { background: var(--bg); color: var(--ink); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-main { max-width: 680px; margin: 0 auto; padding: 24px 16px 40px; }
-header h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
-header p { margin: 0 0 18px; color: var(--muted); }
-.badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--warn-bg); color: var(--warn); margin-bottom: 10px; }
-section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
-section h2 { font-size: 16px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
-.step { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 700; flex: none; }
-label { display: block; font-size: 13px; font-weight: 600; margin: 10px 0 4px; }
-input, textarea { width: 100%; font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; }
-input.mono, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; word-break: break-all; }
-textarea { min-height: 90px; resize: vertical; }
-button { font: inherit; font-weight: 600; border: 0; border-radius: 8px; padding: 10px 16px; cursor: pointer; background: var(--accent); color: var(--accent-ink); margin-top: 12px; }
-button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--line); }
-button:disabled { opacity: .45; cursor: not-allowed; }
-.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 14px; }
-.kv dt { color: var(--muted); }
-.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
-.hint { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
-.msg { border-radius: 8px; padding: 10px 12px; margin-top: 12px; font-size: 14px; overflow-wrap: anywhere; }
-.msg.ok { background: var(--ok-bg); color: var(--ok); }
-.msg.err { background: var(--err-bg); color: var(--err); }
-.msg.info { background: var(--code); color: var(--ink); }
-.deadline { border-left: 3px solid var(--accent); padding: 6px 10px; margin-top: 10px; background: var(--code); border-radius: 0 8px 8px 0; }
-.deadline b { display: block; }
-a { color: var(--accent); }
-.hidden { display: none !important; }
-.next { border: 1px solid var(--accent); background: var(--warn-bg); color: var(--ink); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; font-size: 14px; }
-.next b { color: var(--warn); }
-.joblist button { margin: 6px 6px 0 0; padding: 6px 10px; font-size: 13px; }
-footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 20px; }
-@media (max-width: 480px) { .kv { grid-template-columns: 1fr; } .kv dt { margin-top: 6px; } }
-</style>
+<link rel="stylesheet" href="pilot.css">
 </head>
-<body>
+<body data-title="client.docTitle">
 <main>
+<div class="topbar">
+  <span class="badge" data-i18n="common.badge">Rootstock testnet · chain 31</span>
+  <span class="lang" role="group" aria-label="Language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ja">日本語</button></span>
+</div>
 <header>
-  <span class="badge">Rootstock testnet · chain 31</span>
-  <h1>USDRIF job with an objection window</h1>
-  <p>You are the client. You fund the job in USDRIF. After the provider submits the work, you have 10 days to object. If you object, a reviewer decides. If the client is refunded, you withdraw the refund here.</p>
+  <h1 data-i18n="client.h1">USDRIF job with an objection window</h1>
+  <p data-i18n="client.intro"></p>
 </header>
+<p class="pages" id="pageLinks"></p>
 
-<div class="next" id="nextStep"><b>Next step:</b> <span id="nextText">connect your wallet (step 1).</span></div>
+<div class="next" id="nextStep"><b data-i18n="common.next">Next step:</b> <span id="nextText"></span></div>
 
 <section id="wallet">
-  <h2><span class="step">1</span>Wallet</h2>
+  <h2><span class="step">1</span><span data-i18n="wallet.h">Wallet</span></h2>
   <div class="row">
-    <button id="connectBtn">Connect MetaMask</button>
-    <button id="refreshBtn" class="secondary hidden">Refresh</button>
+    <button id="connectBtn" data-i18n="wallet.connect">Connect MetaMask</button>
+    <button id="refreshBtn" class="secondary hidden" data-i18n="wallet.refresh">Refresh</button>
   </div>
   <dl class="kv hidden" id="walletInfo" style="margin-top:12px">
-    <dt>Address</dt><dd class="mono" id="addr"></dd>
-    <dt>tRBTC (gas)</dt><dd id="rbtc"></dd>
-    <dt>USDRIF in your wallet</dt><dd id="usdrif"></dd>
-    <dt>USDRIF locked in escrow</dt><dd id="locked">-</dd>
-    <dt>USDRIF waiting for you to withdraw</dt><dd id="creditTop">-</dd>
+    <dt data-i18n="wallet.address">Address</dt><dd class="mono" id="addr"></dd>
+    <dt data-i18n="wallet.gas">tRBTC (gas)</dt><dd id="rbtc"></dd>
+    <dt data-i18n="wallet.inWallet">USDRIF in your wallet</dt><dd id="usdrif"></dd>
+    <dt data-i18n="wallet.locked">USDRIF locked in escrow</dt><dd id="locked">-</dd>
+    <dt data-i18n="wallet.waiting">USDRIF waiting for you to withdraw</dt><dd id="creditTop">-</dd>
   </dl>
-  <p class="hint" id="fundsHint" style="display:none">Escrowed USDRIF is held by the job contract, not by your wallet, so your wallet balance goes down when you create a job. A refund first becomes "waiting for you to withdraw"; it is back in your wallet only after step 5.</p>
-  <p class="hint">Gas: free tRBTC from <a href="https://faucet.rootstock.io" target="_blank" rel="noopener">faucet.rootstock.io</a>. USDRIF for this test is sent to you by Predge.</p>
+  <p class="hint hidden" id="fundsHint" data-i18n="wallet.fundsHint"></p>
+  <p class="hint" data-i18n-html="wallet.faucet"></p>
+  <details id="warnings">
+    <summary data-i18n="warn.h">Before you confirm in MetaMask: what you should see</summary>
+    <div data-i18n-html="warn.body"></div>
+  </details>
   <div id="walletMsg"></div>
 </section>
 
+<section id="caseBox">
+  <h2><span class="step">2</span><span data-i18n="case.h">Pilot case: checklist and milestones</span></h2>
+  <div id="caseNone">
+    <p class="hint" style="margin-top:0" data-i18n="case.intro"></p>
+    <div class="row"><button id="myCasesBtn" class="secondary" data-i18n="case.myCases">Show my cases (sign in)</button></div>
+    <div class="joblist" id="caseList"></div>
+    <details id="newCase">
+      <summary data-i18n="case.newH">Agree a new checklist (client)</summary>
+      <label for="ncContractor" data-i18n="case.contractor">Contractor wallet (gets paid per milestone)</label>
+      <input id="ncContractor" class="mono" placeholder="0x…" autocomplete="off">
+      <div class="row">
+        <div style="flex:1;min-width:140px"><label for="ncTotal" data-i18n="case.total">Contract value (test USDRIF)</label><input id="ncTotal" inputmode="decimal" value="100"></div>
+        <div style="flex:1;min-width:140px"><label for="ncDays" data-i18n="case.objDays">Objection period (days)</label><input id="ncDays" inputmode="numeric" disabled></div>
+      </div>
+      <label for="ncTitle" data-i18n="case.title">Title</label>
+      <input id="ncTitle">
+      <label for="ncRule" data-i18n="case.rule">Acceptance rule</label>
+      <textarea id="ncRule"></textarea>
+      <div id="ncMilestones"></div>
+      <p class="hint" data-i18n="case.signHint"></p>
+      <button id="ncCreateBtn" disabled data-i18n="case.createBtn">Sign the checklist and open the case</button>
+      <div id="ncMsg"></div>
+    </details>
+  </div>
+  <div id="caseView" class="hidden">
+    <dl class="kv">
+      <dt data-i18n="case.case">Case</dt><dd><span id="cvTitle"></span> <span class="mono hint" id="cvId"></span></dd>
+      <dt data-i18n="role.client">Client</dt><dd class="mono" id="cvClient"></dd>
+      <dt data-i18n="role.contractor">Contractor</dt><dd class="mono" id="cvContractor"></dd>
+      <dt data-i18n="role.reviewer">Reviewer</dt><dd class="mono" id="cvReviewer"></dd>
+      <dt data-i18n="case.checklistHash">Checklist hash</dt><dd class="mono" id="cvHash"></dd>
+      <dt data-i18n="case.signatures">Signatures</dt><dd id="cvSigs"></dd>
+    </dl>
+    <p class="hint"><span data-i18n="case.shareContractor">Link for the contractor:</span> <span class="mono" id="cvLink"></span> <button type="button" class="small secondary" id="cvCopy" data-i18n="common.copy">Copy</button></p>
+    <details><summary data-i18n="case.ruleH">Acceptance rule (signed)</summary><p class="quote" id="cvRule"></p></details>
+    <h3 data-i18n="case.fundH">Fund the milestones</h3>
+    <p class="hint" data-i18n="case.fundHint"></p>
+    <div class="row">
+      <div style="max-width:220px"><label for="msDays" data-i18n="case.msDays">Days the contractor has to submit each milestone</label><input id="msDays" inputmode="numeric" value="45"></div>
+    </div>
+    <div class="row"><button id="msApproveBtn" disabled></button></div>
+    <div id="msList"></div>
+    <div id="msMsg"></div>
+    <h3 data-i18n="case.itemsH">Evidence per item: approve or ask for more</h3>
+    <p class="hint" data-i18n="case.itemsHint"></p>
+    <div id="itemsList"></div>
+    <div id="itemsMsg"></div>
+    <button id="closeCaseBtn" class="secondary small" data-i18n="case.close">Close this case view</button>
+  </div>
+</section>
+
 <section id="create">
-  <h2><span class="step">2</span>Create the job</h2>
-  <label for="provider">Provider (does the work, gets paid if there is no objection)</label>
-  <input id="provider" class="mono" placeholder="0x…" autocomplete="off">
-  <label for="amount">Amount (USDRIF)</label>
-  <input id="amount" inputmode="decimal" placeholder="10">
-  <label for="evaluator">Evaluator (the objection contract)</label>
-  <input id="evaluator" class="mono" placeholder="0x…" autocomplete="off">
-  <label for="spec">Spec hash (commitment to the agreed evidence checklist)</label>
-  <input id="spec" class="mono" placeholder="0x… (32 bytes)" autocomplete="off">
-  <label for="expiryDays">Days the provider has to submit</label>
-  <input id="expiryDays" inputmode="decimal" placeholder="7">
-  <p class="hint">Two MetaMask confirmations. <b>1. Approve</b>: lets the job contract take this amount of USDRIF. Nothing moves yet and no job exists after this step. <b>2. Create job</b>: moves the USDRIF into escrow and creates the job. Step 1 is skipped if you already approved enough.</p>
-  <p class="hint">What MetaMask should show: for step 1, a spending-cap request for USDRIF to contract <span class="mono">0x15C7…99A0</span> with the amount above; for step 2, a call to the same contract. If the address or amount differs, or MetaMask shows a security warning you do not understand, reject and message Predge first.</p>
-  <button id="createBtn" disabled>Approve USDRIF, then create job</button>
-  <div id="createMsg"></div>
+  <h2><span class="step">3</span><span data-i18n="create.h">Single job without a case</span></h2>
+  <details id="singleJob">
+    <summary data-i18n="create.summary">Create one job by hand (as in the first test)</summary>
+    <label for="provider" data-i18n="create.provider">Provider</label>
+    <input id="provider" class="mono" placeholder="0x…" autocomplete="off">
+    <label for="amount" data-i18n="create.amount">Amount (USDRIF)</label>
+    <input id="amount" inputmode="decimal" placeholder="10">
+    <label for="evaluator" data-i18n="create.evaluator">Evaluator</label>
+    <input id="evaluator" class="mono" placeholder="0x…" autocomplete="off">
+    <label for="spec" data-i18n="create.spec">Spec hash</label>
+    <input id="spec" class="mono" placeholder="0x… (32 bytes)" autocomplete="off">
+    <label for="expiryDays" data-i18n="create.days">Days the provider has to submit</label>
+    <input id="expiryDays" inputmode="decimal" placeholder="7">
+    <p class="hint" data-i18n-html="create.twoSteps"></p>
+    <p class="hint" data-i18n-html="create.metamask"></p>
+    <div class="row">
+      <button id="approveBtn" disabled data-i18n="create.approveBtn">1. Approve USDRIF (permission only)</button>
+      <button id="createBtn" disabled data-i18n="create.createBtn">2. Create job (moves USDRIF into escrow)</button>
+    </div>
+    <div id="createMsg"></div>
+  </details>
 </section>
 
 <section id="jobBox">
-  <h2><span class="step">3</span>Job status</h2>
+  <h2><span class="step">4</span><span data-i18n="job.h">Job status</span></h2>
   <div class="row">
-    <input id="jobId" inputmode="numeric" placeholder="Job id" style="max-width:140px">
-    <button id="loadBtn" class="secondary" style="margin-top:0">Load job</button>
+    <input id="jobId" inputmode="numeric" data-i18n-ph="job.idPh" style="max-width:140px">
+    <button id="loadBtn" class="secondary" style="margin-top:0" data-i18n="job.load">Load job</button>
   </div>
   <div class="joblist" id="myJobs"></div>
   <div id="jobView" class="hidden" style="margin-top:12px">
     <dl class="kv">
-      <dt>Job</dt><dd id="jvId"></dd>
-      <dt>State</dt><dd id="jvState"></dd>
-      <dt>Escrow</dt><dd id="jvEscrow"></dd>
-      <dt>Client</dt><dd class="mono" id="jvClient"></dd>
-      <dt>Provider</dt><dd class="mono" id="jvProvider"></dd>
-      <dt>Objection</dt><dd id="jvObjection"></dd>
+      <dt data-i18n="job.job">Job</dt><dd id="jvId"></dd>
+      <dt data-i18n="job.state">State</dt><dd id="jvState"></dd>
+      <dt data-i18n="job.escrow">Escrow</dt><dd id="jvEscrow"></dd>
+      <dt data-i18n="role.client">Client</dt><dd class="mono" id="jvClient"></dd>
+      <dt data-i18n="role.provider">Provider</dt><dd class="mono" id="jvProvider"></dd>
+      <dt data-i18n="job.objection">Objection</dt><dd id="jvObjection"></dd>
     </dl>
     <div id="jvDeadlines"></div>
   </div>
@@ -129,399 +141,482 @@ footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 2
 </section>
 
 <section id="objectBox">
-  <h2><span class="step">4</span>Object</h2>
-  <p class="hint" style="margin-top:0">Possible only after the provider has submitted, and only before the objection deadline.</p>
-  <p class="hint"><b>What is recorded and what is not.</b> Recorded on-chain: that you objected, when, and a fingerprint (keccak256 hash) of your text. <b>Not sent anywhere: the text itself.</b> The reviewer cannot read it until you send it. After filing, this page saves the text as a .txt file; send that file (or paste the text) to Predge in the chat. The reviewer checks that it matches the fingerprint.</p>
-  <label for="reason">Reason (short, specific)</label>
-  <textarea id="reason" maxlength="2000" placeholder="e.g. The after-work photographs do not show the north side of the site."></textarea>
-  <p class="hint">Hash that will be recorded: <span class="mono" id="reasonHash">-</span></p>
+  <h2><span class="step">5</span><span data-i18n="obj.h">Object</span></h2>
+  <p class="hint" style="margin-top:0" data-i18n="obj.when"></p>
+  <p class="hint" id="objRecorded" data-i18n-html="obj.recordedNoCase"></p>
+  <div id="objItems" class="hidden"><label data-i18n="obj.items">Which item(s) is the objection about?</label><div id="objItemList"></div></div>
+  <label for="reason" data-i18n="obj.reason">Reason (short, specific)</label>
+  <textarea id="reason" maxlength="2000" data-i18n-ph="obj.reasonPh"></textarea>
+  <p class="hint"><span data-i18n="obj.hashLabel">Fingerprint that will be recorded on-chain:</span> <span class="mono" id="reasonHash">-</span></p>
   <div class="row">
-    <button id="objectBtn" disabled>File objection</button>
-    <button id="saveReasonBtn" class="secondary" disabled>Save text as .txt</button>
-    <button id="copyReasonBtn" class="secondary" disabled>Copy text for the reviewer</button>
+    <button id="objectBtn" disabled data-i18n="obj.file">File objection</button>
+    <button id="saveReasonBtn" class="secondary" disabled data-i18n="obj.save">Save text as .txt</button>
+    <button id="copyReasonBtn" class="secondary" disabled data-i18n="obj.copy">Copy text for the reviewer</button>
   </div>
   <div id="objectMsg"></div>
 </section>
 
 <section id="withdrawBox">
-  <h2><span class="step">5</span>Refund: withdraw to your wallet</h2>
-  <dl class="kv"><dt>Waiting for you to withdraw</dt><dd id="credit">-</dd></dl>
+  <h2><span class="step">6</span><span data-i18n="wd.h">Refund: withdraw to your wallet</span></h2>
+  <dl class="kv"><dt data-i18n="wallet.waiting">Waiting for you to withdraw</dt><dd id="credit">-</dd></dl>
   <div class="row">
-    <button id="withdrawBtn" disabled>Withdraw USDRIF</button>
-    <button id="claimBtn" class="secondary hidden">Claim refund (deadline passed)</button>
+    <button id="withdrawBtn" disabled data-i18n="wd.btn">Withdraw USDRIF</button>
+    <button id="claimBtn" class="secondary hidden" data-i18n="wd.claim">Claim refund (deadline passed)</button>
   </div>
-  <p class="hint">A refund has three stages: <b>1. refund approved</b> (the reviewer decided, or the deadline passed and you pressed Claim refund), <b>2. waiting for you to withdraw</b> (the amount above, still held by the job contract), <b>3. back in your wallet</b> (after you press Withdraw and confirm in MetaMask). Closing the job does not send the money to your wallet by itself.</p>
+  <p class="hint" data-i18n-html="wd.stagesClient"></p>
   <div id="withdrawMsg"></div>
 </section>
 
-<footer>Predge · <a href="https://predge.io" target="_blank" rel="noopener">predge.io</a> · testnet only, no real money</footer>
+<footer>Predge · <a href="https://predge.io" target="_blank" rel="noopener">predge.io</a> · <span data-i18n="common.testnetOnly">testnet only, no real money</span> · <a href="glossary.html" data-i18n="common.glossary">Glossary EN/JA</a></footer>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" integrity="sha384-6Zl0Pc8zjSz8KvmNeXRvUQgY4ryFb+BwDvKCmLYcBME0joAaru491tQgi9B7zsMM" crossorigin="anonymous"></script>
-<script>
-"use strict";
-// Same contracts and the same calls as script/usdrif-job.mjs (create / object / withdraw / status).
-const CHAIN_ID = 31;
-const CHAIN_HEX = "0x1f";
-const EXPLORER = "https://rootstock-testnet.blockscout.com";
-const PUBLIC_RPC = "https://public-node.testnet.rsk.co";
-const JOB_ADDR = "0x15C790fb445dc8Ed00aca65e424e26CDeB1999A0";
-// USDRIF on testnet, lower-cased: the explorer spelling uses the Rootstock EIP-1191 checksum, which ethers rejects.
-const TOKEN_ADDR = "0x8dbf326e12a9ff37ed6ddf75ada548c2640a6482";
-const DEFAULT_EVALUATOR = "0xca4E20f5903f795374B96331011Aaa24C45f6316";
+<script type="module">
+import { ethers, core, $, params, CFG, FORK, jobR, tokenR, evR, read, STATE, t, getLang, bindLangSwitch, onLang, applyI18n, fmtTok, fmtRbtc, short, esc, txLink, addrLink, TZ, fmtTime, left, show, addr, explain,
+  W, connectWallet, isMe, txOpts, waitFor, api, signAndPost, itemStatusBadge, bindFileOpen, itemHistory, itemSpec, chainJobs, jobStateText, devBanner, lc, ERC20_ABI, JOB_ABI, EV_ABI } from "./pilot.js";
+import { TEMPLATES } from "./case-core.js";
 
-const JOB_ABI = [
-  "function createJob(address provider, address evaluator, bytes32 specHash, uint64 expiredAt, uint256 amount) returns (uint256 jobId)",
-  "function getJob(uint256 jobId) view returns ((address client, address provider, address evaluator, uint256 escrow, uint64 expiredAt, uint64 submittedAt, uint8 state, bool hashedOnChain, bytes32 specHash, bytes32 deliverable, bytes32 reason))",
-  "function jobCount() view returns (uint256)",
-  "function credit(address) view returns (uint256)",
-  "function evaluationWindow() view returns (uint64)",
-  "function claimRefund(uint256 jobId)",
-  "function withdraw()",
-  "event JobCreated(uint256 indexed jobId, address indexed client, address indexed evaluator, address provider, uint256 escrow, uint64 expiredAt, bytes32 specHash)",
-  "error BadExpiry()", "error BadState()", "error EvaluatorNotIndependent()", "error NotExpired()", "error NothingToWithdraw()",
-  "error PastDeadline()", "error Reentrancy()", "error TransferFailed()", "error UnexpectedAmountReceived(uint256 expected, uint256 received)",
-  "error ZeroAddress()", "error ZeroEscrow()", "error ZeroRecipient()"
-];
-const EV_ABI = [
-  "function object(uint256 jobId, bytes32 objectionHash)",
-  "function objectionOf(uint256 jobId) view returns ((bytes32 hash, uint64 at, bool resolved))",
-  "function objectionPeriod() view returns (uint64)",
-  "function evaluationWindow() view returns (uint64)",
-  "function job() view returns (address)",
-  "error AlreadyObjected()", "error BadState()", "error NotClient()", "error NotOurJob()", "error ObjectionPeriodOver()", "error ZeroHash()"
-];
-const ERC20_ABI = [
-  "function approve(address,uint256) returns (bool)", "function allowance(address,address) view returns (uint256)",
-  "function balanceOf(address) view returns (uint256)", "function decimals() view returns (uint8)"
-];
-const ERRORS = {
-  BadExpiry: "The expiry must be in the future.",
-  BadState: "The job is not in the right state for this action.",
-  EvaluatorNotIndependent: "The evaluator must be different from you and from the provider.",
-  NotExpired: "The refund deadline has not passed yet.",
-  NothingToWithdraw: "There is nothing to withdraw for this address.",
-  PastDeadline: "The deadline for this action has passed.",
-  TransferFailed: "The USDRIF transfer failed. Check your USDRIF balance and the approval.",
-  UnexpectedAmountReceived: "The escrow received a different amount than expected.",
-  ZeroAddress: "Provider and evaluator must be set.",
-  ZeroEscrow: "The amount must be greater than zero.",
-  AlreadyObjected: "An objection was already filed for this job.",
-  NotClient: "Only the client of this job (the wallet that created it) can object.",
-  NotOurJob: "This job does not use this evaluator.",
-  ObjectionPeriodOver: "The objection period is over.",
-  ZeroHash: "The objection text is empty."
-};
-const STATE = ["None", "Open", "Submitted", "Completed", "Rejected", "Expired"];
-const STATE_TEXT = {
-  Open: "Open: funded, waiting for the provider to submit the work",
-  Submitted: "Submitted: the objection window is running",
-  Completed: "Completed: the escrow went to the provider (the provider withdraws it)",
-  Rejected: "Closed, refund approved: the escrow was credited to the client. It reaches the wallet only after Withdraw (step 5)",
-  Expired: "Closed, expired: the escrow was credited to the client. It reaches the wallet only after Withdraw (step 5)"
-};
+let currentJob = null, cd = null, evalR = null, credit = 0n;
+let caseSt = null, caseChain = null, draft = null;
 
-const { ethers } = window;
-const $ = (id) => document.getElementById(id);
-const params = new URLSearchParams(location.search);
-const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
-const RPC = (isLocal && params.get("rpc")) || PUBLIC_RPC; // ?rpc= only for local testing against a fork
-const read = new ethers.JsonRpcProvider(RPC, CHAIN_ID, { staticNetwork: true, cacheTimeout: -1 });
-const jobR = new ethers.Contract(JOB_ADDR, JOB_ABI, read);
-const tokenR = new ethers.Contract(TOKEN_ADDR, ERC20_ABI, read);
-const errIface = new ethers.Interface([...JOB_ABI, ...EV_ABI].filter((x) => x.startsWith("error")));
-
-let account = null, signer = null, currentJob = null, currentJob_data = null, evalR = null, decimals = 18n;
-const fmtTok = (v) => Number(ethers.formatUnits(v, decimals)).toLocaleString("en-US", { maximumFractionDigits: 6 }) + " USDRIF";
-const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
-const txLink = (h) => `<a href="${EXPLORER}/tx/${h}" target="_blank" rel="noopener">${short(h)}</a>`;
-const addrLink = (a) => `<a href="${EXPLORER}/address/${a}" target="_blank" rel="noopener">${a}</a>`;
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-function show(id, kind, html) { $(id).innerHTML = html ? `<div class="msg ${kind}">${html}</div>` : ""; }
-function addr(v, what) {
-  const s = String(v || "").trim();
-  if (!/^0x[0-9a-fA-F]{40}$/.test(s)) throw new Error(`${what}: not a valid address.`);
-  return ethers.getAddress(s.toLowerCase()); // ignore checksum case (Rootstock and Ethereum checksums differ)
-}
-
-function explain(e) {
-  if (e?.code === "ACTION_REJECTED" || e?.info?.error?.code === 4001 || e?.error?.code === 4001) return "You rejected the request in MetaMask.";
-  if (e?.revert?.name) return ERRORS[e.revert.name] || `Reverted: ${e.revert.name}`;
-  const datas = [e?.data, e?.info?.error?.data, e?.error?.data, e?.info?.error?.data?.data, e?.error?.data?.data];
-  for (const d of datas) {
-    if (typeof d === "string" && d.startsWith("0x") && d.length >= 10) {
-      try { const p = errIface.parseError(d); if (p) return ERRORS[p.name] || `Reverted: ${p.name}`; } catch {}
-    }
-  }
-  const m = e?.shortMessage || e?.info?.error?.message || e?.message || String(e);
-  if (/insufficient funds/i.test(m)) return "Not enough tRBTC for gas. Get some at faucet.rootstock.io.";
-  return esc(m);
+// ---------------------------------------------------------------- page links (local test params carried over)
+function pageLinks() {
+  const keep = new URLSearchParams();
+  for (const k of ["rpc", "escrow", "evaluator", "lang"]) if (params.get(k)) keep.set(k, params.get(k));
+  if (caseSt) keep.set("case", caseSt.caseId);
+  const q = keep.toString() ? "?" + keep : "";
+  $("pageLinks").innerHTML = `<b>${esc(t("nav.client"))}</b> · <a href="contractor.html${q}">${esc(t("nav.contractor"))}</a> · <a href="review.html${q}">${esc(t("nav.reviewer"))}</a>`;
 }
 
 // ---------------------------------------------------------------- wallet
-async function ensureChain(eth) {
-  const cur = await eth.request({ method: "eth_chainId" });
-  if (parseInt(cur, 16) === CHAIN_ID) return;
-  try {
-    await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_HEX }] });
-  } catch (e) {
-    if (e?.code === 4902 || e?.data?.originalError?.code === 4902 || /unrecognized|not been added/i.test(e?.message || "")) {
-      await eth.request({ method: "wallet_addEthereumChain", params: [{
-        chainId: CHAIN_HEX, chainName: "Rootstock Testnet",
-        nativeCurrency: { name: "Test RBTC", symbol: "tRBTC", decimals: 18 },
-        rpcUrls: [PUBLIC_RPC], blockExplorerUrls: [EXPLORER]
-      }] });
-    } else throw e;
-  }
-}
-
 async function connect() {
   show("walletMsg");
-  const eth = window.ethereum;
-  if (!eth) { show("walletMsg", "err", 'MetaMask not found. Install it from <a href="https://metamask.io" target="_blank" rel="noopener">metamask.io</a>, or open this page in the MetaMask mobile browser.'); return; }
   try {
-    const accs = await eth.request({ method: "eth_requestAccounts" });
-    await ensureChain(eth);
-    const bp = new ethers.BrowserProvider(eth, "any");
-    signer = await bp.getSigner(accs[0]);
-    account = ethers.getAddress(String(accs[0]).toLowerCase());
-    $("connectBtn").textContent = "Connected";
+    await connectWallet();
+    $("connectBtn").textContent = t("wallet.connected");
     $("connectBtn").disabled = true;
     $("refreshBtn").classList.remove("hidden");
     $("walletInfo").classList.remove("hidden");
-    if (!eth._predgeHooked && eth.on) {
-      eth._predgeHooked = true;
-      eth.on("accountsChanged", () => location.reload());
-      eth.on("chainChanged", () => location.reload());
-    }
     await refreshAll();
     await findMyJobs();
-  } catch (e) { show("walletMsg", "err", explain(e)); }
+    if (params.get("case")) await openCase(params.get("case"));
+  } catch (e) { show("walletMsg", "err", e.html ? t("err.noMetaMask") : explain(e)); }
 }
-
 async function refreshWallet() {
-  if (!account) return;
-  const [rbtc, bal] = await Promise.all([read.getBalance(account), tokenR.balanceOf(account)]);
-  $("addr").innerHTML = addrLink(account);
-  $("rbtc").textContent = Number(ethers.formatEther(rbtc)).toLocaleString("en-US", { maximumFractionDigits: 8 }) + " tRBTC";
+  if (!W.account) return;
+  const [rbtc, bal] = await Promise.all([read.getBalance(W.account), tokenR.balanceOf(W.account)]);
+  $("addr").innerHTML = addrLink(W.account);
+  $("rbtc").textContent = fmtRbtc(rbtc);
   $("usdrif").textContent = fmtTok(bal);
-  if (rbtc === 0n) show("walletMsg", "err", 'This wallet has no tRBTC for gas. Get some at <a href="https://faucet.rootstock.io" target="_blank" rel="noopener">faucet.rootstock.io</a>.');
+  if (rbtc === 0n) show("walletMsg", "err", t("err.noGasWallet"));
   updateButtons();
 }
+async function refreshAll() { await refreshWallet(); if (currentJob) await loadJob(currentJob); await refreshCredit(); await findMyJobs(); if (caseSt) await openCase(caseSt.caseId, true); }
 
-async function refreshAll() { await refreshWallet(); if (currentJob) await loadJob(currentJob); await refreshCredit(); }
-
-// Rootstock has no EIP-1559: legacy type-0 tx with an explicit gas price, like lib/rsk.mjs and the CLI.
-async function txOpts(estimate) {
-  const gp = (BigInt(await read.send("eth_gasPrice", [])) * 12n) / 10n;
-  const gas = await estimate;
-  return { type: 0, gasPrice: gp, gasLimit: (gas * 13n) / 10n + 10000n };
+// ---------------------------------------------------------------- single job: approve and create are two separate buttons
+function readSingleForm() {
+  const provider = addr($("provider").value, t("create.provider"));
+  const evaluator = addr($("evaluator").value, t("create.evaluator"));
+  const spec = $("spec").value.trim();
+  if (!/^0x[0-9a-fA-F]{64}$/.test(spec)) throw new Error(t("err.spec"));
+  const amtStr = $("amount").value.trim();
+  if (!/^\d+(\.\d+)?$/.test(amtStr)) throw new Error(t("err.amount"));
+  const amount = ethers.parseUnits(amtStr, 18);
+  if (amount === 0n) throw new Error(t("err.amountZero"));
+  const days = Number($("expiryDays").value || 7);
+  if (!(days > 0 && days <= 60)) throw new Error(t("err.days"));
+  return { provider, evaluator, spec, amount, days };
 }
-async function waitFor(tx, label, box) {
-  show(box, "info", `${label}: sent ${txLink(tx.hash)}. Waiting for confirmation (Rootstock blocks take about 30 s)…`);
-  for (let i = 0; i < 180; i++) {
-    const rc = await read.getTransactionReceipt(tx.hash);
-    if (rc) {
-      if (rc.status !== 1) throw new Error(`${label} failed on-chain: ${txLink(tx.hash)}`);
-      return rc;
-    }
-    await new Promise((r) => setTimeout(r, isLocal && RPC !== PUBLIC_RPC ? 300 : 4000));
-  }
-  throw new Error(`${label}: not confirmed yet. Check ${txLink(tx.hash)} and refresh.`);
+async function checkEvaluator(evaluator) {
+  const evJob = await new ethers.Contract(evaluator, EV_ABI, read).job().catch(() => null);
+  if (!evJob || lc(evJob) !== lc(CFG.JOB_ADDR)) throw new Error(t("err.evaluator"));
 }
-
-// ---------------------------------------------------------------- create (approve if short, then createJob)
-async function createJob() {
-  show("createMsg");
-  const btn = $("createBtn");
-  btn.disabled = true;
+async function approve(amount, box) {
+  const token = new ethers.Contract(CFG.TOKEN_ADDR, ERC20_ABI, W.signer);
+  show(box, "info", t("create.approving", { amount: fmtTok(amount), contract: short(CFG.JOB_ADDR) }));
+  const tx = await token.approve(CFG.JOB_ADDR, amount, await txOpts(tokenR.approve.estimateGas(CFG.JOB_ADDR, amount, { from: W.account })));
+  await waitFor(tx, t("tx.approve"), box);
+  return tx;
+}
+async function createOnChain(args, box) {
+  const job = new ethers.Contract(CFG.JOB_ADDR, JOB_ABI, W.signer);
+  show(box, "info", t("create.creating", { amount: fmtTok(args[4]) }));
+  const tx = await job.createJob(...args, await txOpts(jobR.createJob.estimateGas(...args, { from: W.account })));
+  const rc = await waitFor(tx, t("tx.create"), box);
+  let jobId = null;
+  for (const l of rc.logs) { try { const p = jobR.interface.parseLog(l); if (p?.name === "JobCreated") jobId = p.args.jobId.toString(); } catch {} }
+  return { tx, jobId };
+}
+async function singleApprove() {
+  show("createMsg"); $("approveBtn").disabled = true;
   try {
-    const provider = addr($("provider").value, "Provider");
-    const evaluator = addr($("evaluator").value, "Evaluator");
-    const spec = $("spec").value.trim();
-    if (!/^0x[0-9a-fA-F]{64}$/.test(spec)) throw new Error("Spec hash: must be 0x followed by 64 hex characters.");
-    const amtStr = $("amount").value.trim();
-    if (!/^\d+(\.\d+)?$/.test(amtStr)) throw new Error("Amount: enter a number, e.g. 10.");
-    const amount = ethers.parseUnits(amtStr, decimals);
-    if (amount === 0n) throw new Error("Amount must be greater than zero.");
-    const days = Number($("expiryDays").value || 7);
-    if (!(days > 0 && days <= 60)) throw new Error("Days to submit: between 1 and 60.");
-    // Evaluator must be wired to this escrow contract (otherwise nobody could object or release).
-    const evJob = await new ethers.Contract(evaluator, EV_ABI, read).job().catch(() => null);
-    if (!evJob || evJob.toLowerCase() !== JOB_ADDR.toLowerCase()) throw new Error("Evaluator: this address is not the objection contract for this escrow.");
-    const bal = await tokenR.balanceOf(account);
-    if (bal < amount) throw new Error(`Your wallet holds ${fmtTok(bal)}, less than ${fmtTok(amount)}. Ask Predge for testnet USDRIF first.`);
-    const expiry = (await read.getBlock("latest")).timestamp + Math.round(days * 86400);
-    const token = new ethers.Contract(TOKEN_ADDR, ERC20_ABI, signer);
-    const job = new ethers.Contract(JOB_ADDR, JOB_ABI, signer);
-    const log = [];
-    if ((await tokenR.allowance(account, JOB_ADDR)) < amount) {
-      show("createMsg", "info", `Step 1 of 2: confirm the USDRIF <b>approval</b> in MetaMask (spending cap ${fmtTok(amount)} for contract ${short(JOB_ADDR)}). This does not create the job yet.`);
-      const tx = await token.approve(JOB_ADDR, amount, await txOpts(tokenR.approve.estimateGas(JOB_ADDR, amount, { from: account })));
-      await waitFor(tx, "Approve", "createMsg");
-      log.push(`Approval confirmed ${txLink(tx.hash)}. <b>The job is not created yet.</b>`);
-    }
-    show("createMsg", "info", (log.length ? log.join("<br>") + "<br>" : "") + `Step 2 of 2: confirm <b>create job</b> in MetaMask. This moves ${fmtTok(amount)} from your wallet into escrow.`);
-    const args = [provider, evaluator, spec, expiry, amount];
-    const tx2 = await job.createJob(...args, await txOpts(jobR.createJob.estimateGas(...args, { from: account })));
-    const rc = await waitFor(tx2, "createJob", "createMsg");
-    let jobId = null;
-    for (const l of rc.logs) { try { const p = jobR.interface.parseLog(l); if (p?.name === "JobCreated") jobId = p.args.jobId.toString(); } catch {} }
-    log.push(`Job created ${txLink(tx2.hash)}`);
-    show("createMsg", "ok", `Done: job ${jobId ?? "?"} created. ${fmtTok(amount)} left your wallet and is locked in escrow (see step 3).<br>${log.join("<br>")}<br>Send the job id <b>${jobId ?? "?"}</b> to Predge.`);
-    if (jobId) { $("jobId").value = jobId; setJobInUrl(jobId); await loadJob(jobId); findMyJobs(); }
+    const f = readSingleForm();
+    await checkEvaluator(f.evaluator);
+    const tx = await approve(f.amount, "createMsg");
+    show("createMsg", "ok", t("create.approved", { link: txLink(tx.hash) }));
+  } catch (e) { show("createMsg", "err", e instanceof Error && !e.code && !e.revert ? esc(e.message) : explain(e)); }
+  await updateSingleButtons();
+}
+async function singleCreate() {
+  show("createMsg"); $("createBtn").disabled = true;
+  try {
+    const f = readSingleForm();
+    await checkEvaluator(f.evaluator);
+    const bal = await tokenR.balanceOf(W.account);
+    if (bal < f.amount) throw new Error(t("err.balance", { bal: fmtTok(bal), amount: fmtTok(f.amount) }));
+    if ((await tokenR.allowance(W.account, CFG.JOB_ADDR)) < f.amount) throw new Error(t("err.approveFirst"));
+    const expiry = (await read.getBlock("latest")).timestamp + Math.round(f.days * 86400);
+    const { tx, jobId } = await createOnChain([f.provider, f.evaluator, f.spec, expiry, f.amount], "createMsg");
+    show("createMsg", "ok", t("create.done", { id: jobId ?? "?", amount: fmtTok(f.amount), link: txLink(tx.hash) }));
+    if (jobId) { $("jobId").value = jobId; await loadJob(jobId); findMyJobs(); }
     await refreshWallet();
-  } catch (e) { show("createMsg", "err", e instanceof Error && !e.code && !e.revert ? e.message : explain(e)); }
-  finally { updateButtons(); }
+  } catch (e) { show("createMsg", "err", e instanceof Error && !e.code && !e.revert ? esc(e.message) : explain(e)); }
+  await updateSingleButtons();
+}
+async function updateSingleButtons() {
+  $("approveBtn").disabled = $("createBtn").disabled = !W.account;
+  if (!W.account) return;
+  try {
+    const amount = ethers.parseUnits($("amount").value.trim() || "0", 18);
+    const allowed = await tokenR.allowance(W.account, CFG.JOB_ADDR);
+    const enough = amount > 0n && allowed >= amount;
+    $("approveBtn").textContent = enough ? t("create.approveDone") : t("create.approveBtn");
+    $("approveBtn").disabled = enough || amount === 0n;
+    $("createBtn").disabled = !enough;
+  } catch { /* amount not a number yet */ }
 }
 
-function setJobInUrl(id) {
-  const u = new URL(location.href);
-  u.searchParams.set("job", id);
-  history.replaceState(null, "", u);
-}
-
-// ---------------------------------------------------------------- status + deadlines (same logic as sdk/deadlines.mjs)
-const TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
-function fmtTime(ts) {
-  const d = new Date(ts * 1000);
-  const local = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZoneName: "short" }).format(d);
-  return { utc: d.toISOString().replace(".000Z", "").replace("T", " "), local };
-}
+// ---------------------------------------------------------------- job status + deadlines (same logic as sdk/deadlines.mjs)
 function computeDeadlines({ job, objectionPeriod, evaluationWindow, objection, now }) {
   const state = STATE[Number(job.state)] ?? `Unknown(${job.state})`;
   const expiredAt = Number(job.expiredAt), submittedAt = Number(job.submittedAt);
   const objected = !!objection && objection.hash && !/^0x0+$/.test(objection.hash);
   const out = [];
-  const add = (key, who, what, ts, active) => out.push({ key, who, what, ts, ...fmtTime(ts), secondsLeft: ts - now, passed: ts - now <= 0, active });
-  if (state === "Open") add("submit", "provider", "The provider must submit the completion package before this time, or you can reclaim the escrow.", expiredAt, true);
+  const add = (key, what, ts, active) => out.push({ key, what, ts, ...fmtTime(ts), secondsLeft: ts - now, active });
+  if (state === "Open") add("submit", t("dl.submit"), expiredAt, true);
   if (state === "Submitted") {
     const objEnd = submittedAt + objectionPeriod, evalEnd = submittedAt + evaluationWindow;
-    if (!objected) {
-      add("objection", "client", "Objection deadline: last moment to file an objection. After it, anyone can release the payment to the provider.", objEnd, true);
-    } else if (!objection.resolved) {
-      add("reviewerDecision", "reviewer", "Objection filed: the reviewer must decide before this time, otherwise you can claim a refund.", evalEnd, true);
-    }
-    add("refundFallback", "anyone", "If nothing was decided by this time, the client can claim a refund.", evalEnd, false);
+    if (!objected) add("objection", t("dl.objection"), objEnd, true);
+    else if (!objection.resolved) add("reviewerDecision", t("dl.reviewer"), evalEnd, true);
+    add("refundFallback", t("dl.fallback"), evalEnd, false);
   }
   return { state, objected: !!objected, deadlines: out };
 }
-function left(s) {
-  if (s <= 0) return "passed";
-  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
-  return (d ? `${d}d ` : "") + `${h}h ${m}m left`;
-}
-
 async function loadJob(idRaw) {
   show("jobMsg");
   try {
     const id = BigInt(String(idRaw).trim());
-    if (id <= 0n) throw new Error("Enter a job id (1, 2, …).");
+    if (id <= 0n) throw new Error(t("err.jobId"));
     const count = await jobR.jobCount();
-    if (id > count) throw new Error(`Job ${id} does not exist yet (this contract has ${count} job${count === 1n ? "" : "s"}).`);
+    if (id > count) throw new Error(t("err.noJob", { id, count }));
     const j = await jobR.getJob(id);
     evalR = new ethers.Contract(j.evaluator, EV_ABI, read);
     const [period, window, o, blk] = await Promise.all([evalR.objectionPeriod(), evalR.evaluationWindow(), evalR.objectionOf(id), read.getBlock("latest")]);
     const now = blk.timestamp;
     const d = computeDeadlines({ job: j, objectionPeriod: Number(period), evaluationWindow: Number(window), objection: { hash: o.hash, at: Number(o[1]), resolved: o.resolved }, now }); // o[1]: Result.at is Array.prototype.at
     currentJob = id.toString();
-    currentJob_data = { j, o, d, now, period: Number(period), window: Number(window) };
-    $("jobView").classList.remove("hidden");
-    $("jvId").innerHTML = `#${id} on ${addrLink(JOB_ADDR)}`;
-    $("jvState").textContent = STATE_TEXT[d.state] || d.state;
-    $("jvEscrow").textContent = fmtTok(j.escrow);
-    $("jvClient").innerHTML = addrLink(j.client) + (account && j.client.toLowerCase() === account.toLowerCase() ? " (you)" : "");
-    $("jvProvider").innerHTML = addrLink(j.provider);
-    $("jvObjection").innerHTML = d.objected
-      ? `Filed ${fmtTime(Number(o[1])).utc} UTC · hash <span class="mono">${o.hash}</span>${o.resolved ? " · decided by the reviewer" : " · waiting for the reviewer"}`
-      : "None";
-    let html = "";
-    if (d.state === "Open") {
-      html += `<div class="deadline"><b>Objection window</b>Opens when the provider submits and stays open for ${Math.round(Number(period) / 86400)} days.</div>`;
-    }
-    for (const x of d.deadlines.filter((x) => x.active || x.key === "refundFallback")) {
-      html += `<div class="deadline"><b>${x.utc} UTC · ${esc(x.local)} (${esc(TZ)}) · ${left(x.secondsLeft)}</b>${esc(x.what)}</div>`;
-    }
-    $("jvDeadlines").innerHTML = html;
-    setJobInUrl(currentJob);
+    cd = { j, o, d, now, period: Number(period), window: Number(window) };
+    renderJob();
+    const u = new URL(location.href); u.searchParams.set("job", currentJob); history.replaceState(null, "", u);
     await refreshCredit();
-  } catch (e) { $("jobView").classList.add("hidden"); currentJob = null; currentJob_data = null; show("jobMsg", "err", e instanceof Error && !e.code ? esc(e.message) : explain(e)); }
+  } catch (e) { $("jobView").classList.add("hidden"); currentJob = null; cd = null; show("jobMsg", "err", e instanceof Error && !e.code ? esc(e.message) : explain(e)); }
+  renderObjItems();
   updateButtons();
 }
-
+function caseMilestoneOf(jobId) { return caseSt?.milestones.find((m) => m.job && m.job.jobId === String(jobId)) || null; }
+function renderJob() {
+  if (!cd) return;
+  const { j, o, d, period } = cd;
+  $("jobView").classList.remove("hidden");
+  const ms = caseMilestoneOf(currentJob);
+  $("jvId").innerHTML = `#${esc(currentJob)} · ${addrLink(CFG.JOB_ADDR)}${ms ? ` · <b>${esc(ms.key)}</b> ${esc(ms.label)}` : ""}`;
+  $("jvState").textContent = t("jst." + d.state);
+  $("jvEscrow").textContent = fmtTok(j.escrow);
+  $("jvClient").innerHTML = addrLink(j.client) + (isMe(j.client) ? ` (${esc(t("common.you"))})` : "");
+  $("jvProvider").innerHTML = addrLink(j.provider);
+  $("jvObjection").innerHTML = d.objected ? t("job.objFiled", { at: fmtTime(Number(o[1])).utc, hash: `<span class="mono">${o.hash}</span>`, st: t(o.resolved ? "job.objDecided" : "job.objWaiting") }) : esc(t("job.none"));
+  let html = "";
+  if (d.state === "Open") html += `<div class="deadline"><b>${esc(t("dl.windowH"))}</b>${esc(t("dl.windowOpens", { days: Math.round(period / 86400) }))}</div>`;
+  for (const x of d.deadlines.filter((x) => x.active || x.key === "refundFallback")) html += `<div class="deadline"><b>${x.utc} UTC · ${esc(x.local)} (${esc(TZ)}) · ${esc(left(x.secondsLeft))}</b>${esc(x.what)}</div>`;
+  $("jvDeadlines").innerHTML = html;
+}
 async function findMyJobs() {
-  if (!account) return;
+  if (!W.account) return;
   try {
     const count = Number(await jobR.jobCount());
     const ids = [];
     for (let i = count; i >= 1 && i > count - 100; i--) ids.push(i);
     const jobs = await Promise.all(ids.map((i) => jobR.getJob(i).then((j) => ({ i, j }))));
-    const mine = jobs.filter(({ j }) => j.client.toLowerCase() === account.toLowerCase());
+    const mine = jobs.filter(({ j }) => isMe(j.client));
     const locked = mine.filter(({ j }) => [1, 2].includes(Number(j.state))).reduce((s, { j }) => s + j.escrow, 0n);
-    $("locked").textContent = fmtTok(locked) + (locked > 0n ? " (held by the job contract, not in your wallet)" : "");
-    $("fundsHint").style.display = "";
-    $("myJobs").innerHTML = mine.length ? `<p class="hint">Your jobs:</p>` + mine.map(({ i, j }) => `<button class="secondary" data-job="${i}">#${i} · ${STATE[Number(j.state)]}</button>`).join("") : "";
+    $("locked").textContent = fmtTok(locked) + (locked > 0n ? ` (${t("wallet.lockedNote")})` : "");
+    $("fundsHint").classList.remove("hidden");
+    $("myJobs").innerHTML = mine.length ? `<p class="hint">${esc(t("job.yours"))}</p>` + mine.map(({ i, j }) => `<button class="secondary" data-job="${i}">#${i} · ${esc(t("jshort." + STATE[Number(j.state)]))}</button>`).join("") : "";
     $("myJobs").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { $("jobId").value = b.dataset.job; loadJob(b.dataset.job); }));
-    if (!currentJob && mine.length) { $("jobId").value = mine[0].i; await loadJob(mine[0].i); }
-  } catch (e) { /* listing is a convenience */ }
+    if (!currentJob && mine.length && !params.get("case")) { $("jobId").value = mine[0].i; await loadJob(mine[0].i); }
+  } catch { /* listing is a convenience */ }
 }
 
-// ---------------------------------------------------------------- object (same as `usdrif-job.mjs object --text`: keccak256 of the UTF-8 text)
-function reasonHash() { const t = $("reason").value.trim(); return t ? ethers.keccak256(ethers.toUtf8Bytes(t)) : null; }
-async function fileObjection() {
-  show("objectMsg");
-  $("objectBtn").disabled = true;
+// ---------------------------------------------------------------- pilot case: create (client signs the checklist)
+function loadTemplate() {
+  const tp = structuredClone(TEMPLATES[getLang()]);
+  draft = { title: tp.title, rule: tp.rule, milestones: tp.milestones };
+  $("ncTitle").value = draft.title;
+  $("ncRule").value = draft.rule;
+  renderDraft();
+}
+function draftAmounts() {
+  const total = Number($("ncTotal").value || 0);
+  return draft.milestones.map((m) => String(Math.round(total * m.percent * 1e4) / 1e6));
+}
+function renderDraft() {
+  const amounts = draftAmounts();
+  $("ncMilestones").innerHTML = draft.milestones.map((m, mi) => `
+    <div class="ms"><div class="ms-head"><b>${esc(m.key)} · <input data-ml="${mi}" value="${esc(m.label)}" style="width:auto;min-width:220px"></b><span>${esc(m.percent)}% = ${esc(amounts[mi])} USDRIF</span></div>
+    <table class="cl"><thead><tr><th>${esc(t("cl.item"))}</th><th>${esc(t("cl.evidence"))}</th><th>${esc(t("cl.viewpoint"))}</th><th>${esc(t("cl.timing"))}</th><th></th></tr></thead><tbody>
+    ${m.items.map((it, ii) => `<tr>${["title", "evidence", "viewpoint", "timing"].map((f) => `<td data-l="${esc(t("cl." + (f === "title" ? "item" : f)))}"><input data-m="${mi}" data-i="${ii}" data-f="${f}" value="${esc(it[f])}" aria-label="${esc(t("cl." + (f === "title" ? "item" : f)))}"></td>`).join("")}<td><button type="button" class="small secondary" data-del="${mi}:${ii}" aria-label="${esc(t("cl.remove"))}">×</button></td></tr>`).join("")}
+    </tbody></table><button type="button" class="small secondary" data-add="${mi}">${esc(t("cl.add"))}</button></div>`).join("");
+}
+$("ncMilestones").addEventListener("input", (e) => {
+  const el = e.target;
+  if (el.dataset.f) draft.milestones[el.dataset.m].items[el.dataset.i][el.dataset.f] = el.value;
+  if (el.dataset.ml) draft.milestones[el.dataset.ml].label = el.value;
+});
+$("ncMilestones").addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.add) { const m = draft.milestones[b.dataset.add]; m.items.push({ id: `${m.key.toLowerCase()}-item${m.items.length + 1}-${Math.random().toString(36).slice(2, 6)}`, title: "", evidence: "", viewpoint: "-", timing: "" }); }
+  if (b.dataset.del) { const [mi, ii] = b.dataset.del.split(":").map(Number); if (draft.milestones[mi].items.length > 1) draft.milestones[mi].items.splice(ii, 1); }
+  renderDraft();
+});
+$("ncTotal").addEventListener("input", renderDraft);
+
+async function createCase() {
+  show("ncMsg"); $("ncCreateBtn").disabled = true;
   try {
-    const { j } = currentJob_data;
-    const h = reasonHash();
-    if (!h) throw new Error("Write the reason first.");
-    const ev = new ethers.Contract(j.evaluator, EV_ABI, signer);
-    show("objectMsg", "info", "Confirm the objection in MetaMask.");
-    const tx = await ev.object(BigInt(currentJob), h, await txOpts(evalR.object.estimateGas(BigInt(currentJob), h, { from: account })));
-    await waitFor(tx, "Objection", "objectMsg");
-    show("objectMsg", "ok", `Objection filed: ${txLink(tx.hash)}<br>Recorded fingerprint <span class="mono">${h}</span>. The payment is now on hold for the reviewer.<br><b>One more thing to do:</b> the text was saved as a .txt file but not sent. Send the file, or press "Copy text for the reviewer" and paste it, to Predge in the chat.`);
-    downloadReason();
-    await loadJob(currentJob);
-  } catch (e) { show("objectMsg", "err", e instanceof Error && !e.code && !e.revert ? esc(e.message) : explain(e)); }
+    const contractor = addr($("ncContractor").value, t("case.contractor"));
+    if (isMe(contractor)) throw new Error(t("err.selfContractor"));
+    const total = $("ncTotal").value.trim();
+    if (!/^\d+(\.\d{1,6})?$/.test(total) || Number(total) <= 0) throw new Error(t("err.amount"));
+    const ev = evR(CFG.EVALUATOR);
+    const [reviewer, period] = await Promise.all([ev.reviewer(), ev.objectionPeriod()]);
+    const amounts = draftAmounts();
+    const checklist = { title: $("ncTitle").value.trim(), rule: $("ncRule").value.trim(), total, objectionDays: Math.round(Number(period) / 86400), currency: "USDRIF",
+      milestones: draft.milestones.map((m, i) => ({ key: m.key, label: m.label.trim(), percent: m.percent, amount: amounts[i], items: m.items.map((it) => ({ id: it.id, title: it.title.trim(), evidence: it.evidence.trim(), viewpoint: it.viewpoint.trim() || "-", timing: it.timing.trim() })) })) };
+    core.checklistItems(checklist); // same validation as the server, before asking for a signature
+    const caseId = ethers.hexlify(ethers.randomBytes(16)).slice(2);
+    const checklistHash = core.hashJson(checklist);
+    show("ncMsg", "info", t("sig.confirm"));
+    await signAndPost(caseId, "case.create", { caseId, client: W.account, contractor, escrow: CFG.JOB_ADDR, evaluator: CFG.EVALUATOR, reviewer, chainId: 31, checklist, checklistHash },
+      t("sum.create", { title: checklist.title.slice(0, 80), total }), { create: true });
+    show("ncMsg", "ok", t("case.created"));
+    await openCase(caseId);
+  } catch (e) { show("ncMsg", "err", e instanceof Error && !e.code && !e.caseApi ? esc(e.message) : explain(e)); }
+  $("ncCreateBtn").disabled = !W.account;
+}
+async function listCases() {
+  show("ncMsg");
+  try {
+    const r = await api.list();
+    $("caseList").innerHTML = r.cases.length ? r.cases.map((c) => `<button class="secondary" data-case="${c.caseId}">${esc(c.title)} · ${esc(t("role." + c.role))} · ${esc(fmtTime(c.createdAt).local)}</button>`).join("") : `<p class="hint">${esc(t("case.noCases"))}</p>`;
+    $("caseList").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => openCase(b.dataset.case)));
+  } catch (e) { show("ncMsg", "err", explain(e)); }
+}
+
+// ---------------------------------------------------------------- pilot case: view, fund milestones, review items
+async function openCase(id, quiet = false) {
+  try {
+    const r = await api.getCase(id);
+    caseSt = core.deriveCase(r.state.records);
+    caseChain = await chainJobs(caseSt);
+    const u = new URL(location.href); u.searchParams.set("case", id); history.replaceState(null, "", u);
+    $("caseNone").classList.add("hidden");
+    $("caseView").classList.remove("hidden");
+    renderCase();
+    pageLinks();
+    if (!currentJob) { const m = caseSt.milestones.find((m) => m.job && caseChain.jobs[m.key]?.state === "Submitted") || caseSt.milestones.find((m) => m.job); if (m) { $("jobId").value = m.job.jobId; await loadJob(m.job.jobId); } }
+    else { renderJob(); renderObjItems(); }
+  } catch (e) { if (!quiet) show("ncMsg", "err", explain(e)); }
   updateButtons();
 }
+function renderCase() {
+  const st = caseSt;
+  $("cvTitle").textContent = st.checklist.title;
+  $("cvId").textContent = st.caseId;
+  $("cvClient").innerHTML = addrLink(st.client) + (isMe(st.client) ? ` (${esc(t("common.you"))})` : "");
+  $("cvContractor").innerHTML = addrLink(st.contractor);
+  $("cvReviewer").innerHTML = addrLink(st.reviewer);
+  $("cvHash").textContent = st.checklistHash;
+  $("cvRule").textContent = st.checklist.rule;
+  $("cvSigs").innerHTML = `${esc(t("role.client"))} ✓ · ${esc(t("role.contractor"))} ${st.signedBy.contractor ? "✓" : `<b>${esc(t("case.notYet"))}</b>`}`;
+  const link = new URL("contractor.html", location.href); link.search = ""; link.searchParams.set("case", st.caseId);
+  $("cvLink").textContent = link.href;
+  // milestones
+  const ms = st.milestones.map((m) => {
+    const cj = caseChain.jobs[m.key];
+    const state = jobStateText(cj, caseChain.now);
+    let actions = "";
+    if (!m.job && isMe(st.client)) {
+      actions = `<button class="small" data-create="${m.key}" ${st.signedBy.contractor ? "" : "disabled"}>${esc(t("ms.create", { key: m.key, amount: m.amount }))}</button>
+        <span class="hint">${esc(t("ms.orLink"))}</span> <input data-linkid="${m.key}" inputmode="numeric" style="width:90px" aria-label="job id"> <button class="small secondary" data-link="${m.key}" ${st.signedBy.contractor ? "" : "disabled"}>${esc(t("ms.link"))}</button>`;
+    } else if (m.job) actions = `<button class="small secondary" data-loadjob="${m.job.jobId}">${esc(t("ms.open", { id: m.job.jobId }))}</button>`;
+    return `<div class="ms"><div class="ms-head"><b>${esc(m.key)} · ${esc(m.label)}</b><span>${esc(m.amount)} USDRIF · ${esc(t("ms.items", { n: m.itemIds.length }))}</span></div>
+      <p class="hint">${m.job ? `${esc(t("ms.job", { id: m.job.jobId }))} · ` : ""}${esc(state)}</p><div class="row">${actions}</div></div>`;
+  }).join("");
+  $("msList").innerHTML = ms;
+  const unfunded = st.milestones.filter((m) => !m.job);
+  const need = unfunded.reduce((s, m) => s + ethers.parseUnits(m.amount, 18), 0n);
+  $("msApproveBtn").dataset.need = need.toString();
+  $("msApproveBtn").textContent = t("ms.approve", { amount: fmtTok(need) });
+  $("msApproveBtn").classList.toggle("hidden", !unfunded.length || !isMe(st.client));
+  $("msApproveBtn").disabled = !st.signedBy.contractor;
+  if (W.account && need > 0n) tokenR.allowance(W.account, CFG.JOB_ADDR).then((a) => { if (a >= need) { $("msApproveBtn").textContent = t("ms.approved", { amount: fmtTok(need) }); $("msApproveBtn").disabled = true; } }).catch(() => {});
+  // items
+  $("itemsList").innerHTML = st.milestones.map((m) => `<h3>${esc(m.key)} · ${esc(m.label)}</h3>` + m.itemIds.map((id) => {
+    const it = st.items[id];
+    const last = it.uploads.at(-1);
+    const canReview = isMe(st.client) && last && ["submitted", "updated"].includes(it.status);
+    const objected = st.objections.some((o) => (o.payload.itemIds || []).includes(id));
+    return `<div class="item${objected ? " flag" : ""}"><div class="item-head"><b>${esc(it.title)}</b>${itemStatusBadge(it.status)}</div>${itemSpec(it)}${itemHistory(st, it)}
+      ${canReview ? `<input data-note="${id}" data-i18n-ph="rv.notePh" placeholder="${esc(t("rv.notePh"))}"><div class="row"><button class="small" data-approve="${id}">${esc(t("rv.approve"))}</button><button class="small secondary" data-more="${id}">${esc(t("rv.more"))}</button></div>` : ""}
+      ${objected ? `<p class="hint">${esc(t("item.objected"))}</p>` : ""}</div>`;
+  }).join("")).join("");
+  $("itemsList").insertAdjacentHTML("beforeend", `<p class="hint">${esc(t("item.hashNote"))}</p>`);
+}
+async function approveMilestones() {
+  show("msMsg"); $("msApproveBtn").disabled = true;
+  try {
+    const need = BigInt($("msApproveBtn").dataset.need || "0");
+    const bal = await tokenR.balanceOf(W.account);
+    if (bal < need) throw new Error(t("err.balance", { bal: fmtTok(bal), amount: fmtTok(need) }));
+    const tx = await approve(need, "msMsg");
+    show("msMsg", "ok", t("create.approved", { link: txLink(tx.hash) }));
+  } catch (e) { show("msMsg", "err", e instanceof Error && !e.code && !e.revert ? esc(e.message) : explain(e)); }
+  $("msApproveBtn").disabled = false;
+  updateButtons();
+}
+async function createMilestone(key) {
+  show("msMsg");
+  try {
+    const m = caseSt.milestones.find((x) => x.key === key);
+    const amount = ethers.parseUnits(m.amount, 18);
+    if ((await tokenR.allowance(W.account, CFG.JOB_ADDR)) < amount) throw new Error(t("err.approveFirst"));
+    const days = Number($("msDays").value || 45);
+    if (!(days > 0 && days <= 120)) throw new Error(t("err.days120"));
+    const spec = await evR(caseSt.evaluator).specHashFor(caseSt.checklistHash, m.itemIds.length);
+    const expiry = (await read.getBlock("latest")).timestamp + Math.round(days * 86400);
+    const { tx, jobId } = await createOnChain([caseSt.contractor, caseSt.evaluator, spec, expiry, amount], "msMsg");
+    show("msMsg", "info", t("ms.created", { key, id: jobId, link: txLink(tx.hash) }) + "<br>" + t("sig.confirm"));
+    await signAndPost(caseSt.caseId, "job.link", { milestone: key, jobId }, t("sum.link", { key, id: jobId }));
+    show("msMsg", "ok", t("ms.linked", { key, id: jobId, link: txLink(tx.hash) }));
+    await refreshWallet(); await findMyJobs();
+    currentJob = null;
+    await openCase(caseSt.caseId);
+  } catch (e) { show("msMsg", "err", e instanceof Error && !e.code && !e.revert && !e.caseApi ? esc(e.message) : explain(e)); }
+}
+async function linkMilestone(key) {
+  show("msMsg");
+  try {
+    const id = String($("msList").querySelector(`input[data-linkid="${key}"]`).value || "").trim();
+    if (!/^\d+$/.test(id)) throw new Error(t("err.jobId"));
+    show("msMsg", "info", t("sig.confirm"));
+    await signAndPost(caseSt.caseId, "job.link", { milestone: key, jobId: id }, t("sum.link", { key, id }));
+    show("msMsg", "ok", t("ms.linkedOnly", { key, id }));
+    await openCase(caseSt.caseId);
+  } catch (e) { show("msMsg", "err", e instanceof Error && !e.code && !e.caseApi ? esc(e.message) : explain(e)); }
+}
+async function reviewItem(id, decision) {
+  show("itemsMsg");
+  try {
+    const it = caseSt.items[id];
+    const note = ($("itemsList").querySelector(`input[data-note="${id}"]`)?.value || "").trim();
+    if (decision === "need_more" && !note) throw new Error(t("rv.noteNeeded"));
+    show("itemsMsg", "info", t("sig.confirm"));
+    await signAndPost(caseSt.caseId, "review", { itemId: id, evidenceRecord: it.uploads.at(-1).hash, decision, note }, t(decision === "approved" ? "sum.approve" : "sum.more", { item: it.title.slice(0, 80) }));
+    show("itemsMsg", "ok", t(decision === "approved" ? "rv.approvedMsg" : "rv.moreMsg", { item: esc(it.title) }));
+    await openCase(caseSt.caseId);
+  } catch (e) { show("itemsMsg", "err", e instanceof Error && !e.code && !e.caseApi ? esc(e.message) : explain(e)); }
+}
+$("msList").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.create) createMilestone(b.dataset.create);
+  if (b.dataset.link) linkMilestone(b.dataset.link);
+  if (b.dataset.loadjob) { $("jobId").value = b.dataset.loadjob; loadJob(b.dataset.loadjob).then(() => $("jobBox").scrollIntoView({ behavior: "smooth" })); }
+});
+$("itemsList").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.approve) reviewItem(b.dataset.approve, "approved");
+  if (b.dataset.more) reviewItem(b.dataset.more, "need_more");
+});
+bindFileOpen($("itemsList"), (k, m) => show("itemsMsg", k, m));
+
+// ---------------------------------------------------------------- object: text goes to the private case record, its hash on-chain
+function reasonText() { return $("reason").value.trim(); }
+function reasonHash() { const s = reasonText(); return s ? core.textHash(s) : null; }
+function renderObjItems() {
+  const ms = currentJob ? caseMilestoneOf(currentJob) : null;
+  $("objItems").classList.toggle("hidden", !ms);
+  $("objRecorded").innerHTML = t(ms ? "obj.recordedCase" : "obj.recordedNoCase");
+  if (ms) {
+    const prev = new Set([...$("objItemList").querySelectorAll("input:checked")].map((x) => x.value));
+    $("objItemList").innerHTML = ms.itemIds.map((id) => `<label style="font-weight:400"><input type="checkbox" value="${id}" ${prev.has(id) ? "checked" : ""}> ${esc(caseSt.items[id].title)} ${itemStatusBadge(caseSt.items[id].status)}</label>`).join("");
+  }
+}
+async function fileObjection() {
+  show("objectMsg"); $("objectBtn").disabled = true;
+  try {
+    const { j } = cd;
+    const h = reasonHash();
+    if (!h) throw new Error(t("obj.writeFirst"));
+    const ms = caseMilestoneOf(currentJob);
+    if (ms) {
+      const itemIds = [...$("objItemList").querySelectorAll("input:checked")].map((x) => x.value);
+      if (!itemIds.length) throw new Error(t("obj.pickItem"));
+      show("objectMsg", "info", t("obj.signFirst"));
+      await signAndPost(caseSt.caseId, "objection", { jobId: currentJob, text: reasonText(), textHash: h, itemIds }, t("sum.objection", { id: currentJob }));
+    }
+    const ev = new ethers.Contract(j.evaluator, EV_ABI, W.signer);
+    show("objectMsg", "info", t("obj.confirmTx"));
+    const tx = await ev.object(BigInt(currentJob), h, await txOpts(evalR.object.estimateGas(BigInt(currentJob), h, { from: W.account })));
+    await waitFor(tx, t("tx.objection"), "objectMsg");
+    show("objectMsg", "ok", t(ms ? "obj.doneCase" : "obj.doneNoCase", { link: txLink(tx.hash), hash: `<span class="mono">${h}</span>` }));
+    if (!ms) downloadReason();
+    await loadJob(currentJob);
+    if (caseSt) await openCase(caseSt.caseId, true);
+  } catch (e) { show("objectMsg", "err", e instanceof Error && !e.code && !e.revert && !e.caseApi ? esc(e.message) : explain(e)); }
+  updateButtons();
+}
+const reasonBody = () => `${t("obj.fileHeader", { id: currentJob ?? "?", contract: CFG.JOB_ADDR })}\nkeccak256(text) = ${reasonHash()}\n\n${reasonText()}\n`;
 function downloadReason() {
-  const t = $("reason").value.trim();
-  if (!t) return;
-  const body = `Objection for job ${currentJob ?? "?"} (AgentJobERC20 ${JOB_ADDR}, Rootstock testnet)\nkeccak256(text) = ${reasonHash()}\n\n${t}\n`;
+  if (!reasonText()) return;
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([body], { type: "text/plain" }));
+  a.href = URL.createObjectURL(new Blob([reasonBody()], { type: "text/plain" }));
   a.download = `objection-job-${currentJob ?? "x"}.txt`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
-
 async function copyReason() {
-  const t = $("reason").value.trim();
-  if (!t) return;
-  const body = `Objection for job ${currentJob ?? "?"} (AgentJobERC20 ${JOB_ADDR}, Rootstock testnet)\nkeccak256(text) = ${reasonHash()}\n\n${t}`;
-  try { await navigator.clipboard.writeText(body); show("objectMsg", "ok", "Copied. Paste it into the chat with Predge."); }
-  catch { show("objectMsg", "err", "Could not copy automatically. Use \"Save text as .txt\" instead."); }
+  if (!reasonText()) return;
+  try { await navigator.clipboard.writeText(reasonBody()); show("objectMsg", "ok", t("obj.copied")); }
+  catch { show("objectMsg", "err", t("obj.copyFail")); }
 }
 
 // ---------------------------------------------------------------- refund: withdraw credit / claimRefund
 async function refreshCredit() {
-  if (!account) { $("credit").textContent = "-"; return; }
-  const c = await jobR.credit(account);
-  $("credit").textContent = fmtTok(c);
-  $("creditTop").textContent = fmtTok(c);
-  $("withdrawBtn").dataset.credit = c.toString();
+  if (!W.account) { $("credit").textContent = "-"; return; }
+  credit = await jobR.credit(W.account);
+  $("credit").textContent = fmtTok(credit);
+  $("creditTop").textContent = fmtTok(credit);
   updateButtons();
 }
 async function withdraw() {
-  show("withdrawMsg");
-  $("withdrawBtn").disabled = true;
+  show("withdrawMsg"); $("withdrawBtn").disabled = true;
   try {
-    const job = new ethers.Contract(JOB_ADDR, JOB_ABI, signer);
-    show("withdrawMsg", "info", "Confirm the withdrawal in MetaMask.");
-    const tx = await job.withdraw(await txOpts(jobR.withdraw.estimateGas({ from: account })));
-    await waitFor(tx, "Withdraw", "withdrawMsg");
-    show("withdrawMsg", "ok", `Done: the USDRIF is back in your wallet: ${txLink(tx.hash)}`);
+    const job = new ethers.Contract(CFG.JOB_ADDR, JOB_ABI, W.signer);
+    show("withdrawMsg", "info", t("wd.confirm"));
+    const tx = await job.withdraw(await txOpts(jobR.withdraw.estimateGas({ from: W.account })));
+    await waitFor(tx, t("tx.withdraw"), "withdrawMsg");
+    show("withdrawMsg", "ok", t("wd.done", { link: txLink(tx.hash) }));
     await refreshAll();
   } catch (e) { show("withdrawMsg", "err", explain(e)); }
   updateButtons();
@@ -529,72 +624,90 @@ async function withdraw() {
 async function claimRefund() {
   show("withdrawMsg");
   try {
-    const job = new ethers.Contract(JOB_ADDR, JOB_ABI, signer);
+    const job = new ethers.Contract(CFG.JOB_ADDR, JOB_ABI, W.signer);
     const id = BigInt(currentJob);
-    const tx = await job.claimRefund(id, await txOpts(jobR.claimRefund.estimateGas(id, { from: account })));
-    await waitFor(tx, "Claim refund", "withdrawMsg");
-    show("withdrawMsg", "ok", `Refund approved: ${txLink(tx.hash)}. It is not in your wallet yet: press Withdraw USDRIF.`);
+    const tx = await job.claimRefund(id, await txOpts(jobR.claimRefund.estimateGas(id, { from: W.account })));
+    await waitFor(tx, t("tx.claim"), "withdrawMsg");
+    show("withdrawMsg", "ok", t("wd.claimed", { link: txLink(tx.hash) }));
     await refreshAll();
   } catch (e) { show("withdrawMsg", "err", explain(e)); }
 }
 
 // ---------------------------------------------------------------- next-step banner (one line: where you are, what to do)
 function updateNext(isClient) {
-  const cd = currentJob_data;
-  const credit = BigInt($("withdrawBtn").dataset.credit || "0");
-  let t;
-  if (!account) t = "connect your wallet (step 1).";
-  else if (credit > 0n) t = `${fmtTok(credit)} is waiting for you. Press "Withdraw USDRIF" (step 5) to move it to your wallet.`;
-  else if (!cd) t = "fill in the job and press \"Approve USDRIF, then create job\" (step 2), or load an existing job (step 3).";
-  else if (cd.d.state === "Open") t = `job #${currentJob} is funded. Wait for the provider to submit the work; the objection window opens then.`;
-  else if (cd.d.state === "Submitted" && !cd.d.objected && cd.now < Number(cd.j.submittedAt) + cd.period)
-    t = isClient ? `job #${currentJob}: the work was submitted. Review it. If something is missing, write the reason and file an objection (step 4) before the deadline shown in step 3. If all is fine, do nothing.` : `job #${currentJob}: objection window running.`;
-  else if (cd.d.state === "Submitted" && cd.d.objected && !cd.o.resolved) t = `job #${currentJob}: objection filed, the payment is on hold. Make sure the reviewer has your objection text (step 4), then wait for the decision.`;
-  else if (cd.d.state === "Submitted") t = `job #${currentJob}: waiting for release or refund (see the deadlines in step 3).`;
-  else if (cd.d.state === "Completed") t = `job #${currentJob} is closed: the provider was paid. Nothing to do.`;
-  else t = `job #${currentJob} is closed and nothing is waiting for you. Check your wallet balance in step 1.`;
-  $("nextText").textContent = t;
+  let s;
+  const st = caseSt;
+  const toReview = st ? Object.values(st.items).filter((it) => ["submitted", "updated"].includes(it.status)).length : 0;
+  if (!W.account) s = t("next.connect");
+  else if (credit > 0n) s = t("next.withdraw", { amount: fmtTok(credit) });
+  else if (st && !st.signedBy.contractor) s = t("next.waitSign");
+  else if (st && st.milestones.some((m) => !m.job)) s = t("next.fund");
+  else if (cd && cd.d.state === "Submitted" && !cd.d.objected && cd.now < Number(cd.j.submittedAt) + cd.period && isClient) s = t("next.submitted", { id: currentJob });
+  else if (cd && cd.d.state === "Submitted" && cd.d.objected && !cd.o.resolved) s = t(st ? "next.onHoldCase" : "next.onHold", { id: currentJob });
+  else if (toReview) s = t("next.review", { n: toReview });
+  else if (!cd && !st) s = t("next.start");
+  else if (cd && cd.d.state === "Open") s = t("next.open", { id: currentJob });
+  else if (cd && cd.d.state === "Submitted") s = t("next.waitRelease", { id: currentJob });
+  else if (cd && cd.d.state === "Completed") s = t("next.completed", { id: currentJob });
+  else if (cd) s = t("next.closed", { id: currentJob });
+  else s = t("next.case");
+  $("nextText").textContent = s;
 }
 
 // ---------------------------------------------------------------- buttons
 function updateButtons() {
-  $("createBtn").disabled = !account;
-  const cd = currentJob_data;
-  const isClient = !!(account && cd && cd.j.client.toLowerCase() === account.toLowerCase());
+  $("ncCreateBtn").disabled = !W.account;
+  const isClient = !!(W.account && cd && isMe(cd.j.client));
   const canObject = !!(isClient && cd.d.state === "Submitted" && !cd.d.objected && cd.now < Number(cd.j.submittedAt) + cd.period && reasonHash());
   $("objectBtn").disabled = !canObject;
-  $("saveReasonBtn").disabled = !reasonHash();
-  $("copyReasonBtn").disabled = !reasonHash();
+  $("saveReasonBtn").disabled = $("copyReasonBtn").disabled = !reasonHash();
   updateNext(isClient);
   let why = "";
-  if (cd && account && !isClient) why = "Only the client of this job can object; the connected wallet is not the client.";
-  else if (cd && cd.d.state === "Open") why = "The provider has not submitted yet. The Object button turns on after the submission.";
-  else if (cd && cd.d.state === "Submitted" && cd.d.objected) why = "An objection is already filed for this job.";
-  else if (cd && cd.d.state === "Submitted" && cd.now >= Number(cd.j.submittedAt) + cd.period) why = "The objection period is over.";
-  else if (cd && !["Open", "Submitted"].includes(cd.d.state)) why = "This job is finished.";
-  if (!$("objectMsg").querySelector(".ok,.err")) show("objectMsg", why ? "info" : "", why);
-  $("withdrawBtn").disabled = !(account && BigInt($("withdrawBtn").dataset.credit || "0") > 0n);
-  const refundable = !!(cd && account && ((cd.d.state === "Open" && cd.now >= Number(cd.j.expiredAt)) || (cd.d.state === "Submitted" && cd.now >= Number(cd.j.submittedAt) + cd.window)));
+  if (cd && W.account && !isClient) why = t("obj.whyNotClient");
+  else if (cd && cd.d.state === "Open") why = t("obj.whyOpen");
+  else if (cd && cd.d.state === "Submitted" && cd.d.objected) why = t("obj.whyFiled");
+  else if (cd && cd.d.state === "Submitted" && cd.now >= Number(cd.j.submittedAt) + cd.period) why = t("obj.whyOver");
+  else if (cd && !["Open", "Submitted"].includes(cd.d.state)) why = t("obj.whyDone");
+  if (!$("objectMsg").querySelector(".ok,.err")) show("objectMsg", why ? "info" : "", esc(why));
+  $("withdrawBtn").disabled = !(W.account && credit > 0n);
+  const refundable = !!(cd && W.account && ((cd.d.state === "Open" && cd.now >= Number(cd.j.expiredAt)) || (cd.d.state === "Submitted" && cd.now >= Number(cd.j.submittedAt) + cd.window)));
   $("claimBtn").classList.toggle("hidden", !refundable);
+  updateSingleButtons();
 }
 
 // ---------------------------------------------------------------- init
+devBanner();
+bindLangSwitch();
+onLang(() => { pageLinks(); renderJob(); if (caseSt) renderCase(); renderObjItems(); if (!caseSt && draft && !$("ncContractor").value) loadTemplate(); updateButtons(); if (W.account) { $("connectBtn").textContent = t("wallet.connected"); refreshWallet(); refreshCredit(); findMyJobs(); } });
+pageLinks();
+loadTemplate();
+$("ncDays").value = "…";
+evR(CFG.EVALUATOR).objectionPeriod().then((p) => { $("ncDays").value = Math.round(Number(p) / 86400); }).catch(() => {});
 $("provider").value = params.get("provider") || "";
 $("amount").value = params.get("amount") || "";
-$("evaluator").value = params.get("evaluator") || DEFAULT_EVALUATOR;
+$("evaluator").value = params.get("evaluator") || CFG.EVALUATOR;
 $("spec").value = params.get("spec") || "";
 $("expiryDays").value = params.get("expiryDays") || "7";
+if (params.get("provider") || params.get("spec")) $("singleJob").open = true;
+$("ncContractor").value = params.get("contractor") || "";
 $("connectBtn").addEventListener("click", connect);
 $("refreshBtn").addEventListener("click", () => refreshAll().catch((e) => show("walletMsg", "err", explain(e))));
-$("createBtn").addEventListener("click", createJob);
+$("approveBtn").addEventListener("click", singleApprove);
+$("createBtn").addEventListener("click", singleCreate);
+$("amount").addEventListener("input", updateSingleButtons);
 $("loadBtn").addEventListener("click", () => loadJob($("jobId").value));
-$("reason").addEventListener("input", () => { const h = reasonHash(); $("reasonHash").textContent = h || "-"; updateButtons(); });
+$("reason").addEventListener("input", () => { $("reasonHash").textContent = reasonHash() || "-"; updateButtons(); });
 $("objectBtn").addEventListener("click", fileObjection);
 $("saveReasonBtn").addEventListener("click", downloadReason);
 $("copyReasonBtn").addEventListener("click", copyReason);
 $("withdrawBtn").addEventListener("click", withdraw);
 $("claimBtn").addEventListener("click", claimRefund);
-tokenR.decimals().then((d) => { decimals = BigInt(d); }).catch(() => {});
+$("ncCreateBtn").addEventListener("click", createCase);
+$("myCasesBtn").addEventListener("click", () => (W.account ? listCases() : show("ncMsg", "err", t("err.connectFirst"))));
+$("msApproveBtn").addEventListener("click", approveMilestones);
+$("cvCopy").addEventListener("click", () => navigator.clipboard.writeText($("cvLink").textContent).catch(() => {}));
+$("closeCaseBtn").addEventListener("click", () => { caseSt = null; const u = new URL(location.href); u.searchParams.delete("case"); history.replaceState(null, "", u); $("caseView").classList.add("hidden"); $("caseNone").classList.remove("hidden"); pageLinks(); renderObjItems(); updateButtons(); });
+updateButtons();
 if (params.get("job")) { $("jobId").value = params.get("job"); loadJob(params.get("job")); }
 if (window.ethereum) window.ethereum.request({ method: "eth_accounts" }).then((a) => { if (a && a.length) connect(); }).catch(() => {});
 </script>

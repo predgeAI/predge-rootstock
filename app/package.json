@@ -1,0 +1,13 @@
+{
+  "name": "predge-rsk-job",
+  "private": true,
+  "type": "module",
+  "description": "Static pages (client, contractor, reviewer) + the private case record function for the Rootstock testnet USDRIF pilot. Deployed as the Vercel project predge-rsk-job (root: this folder).",
+  "dependencies": {
+    "@vercel/blob": "^2.9.0",
+    "ethers": "^6.13.4"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
