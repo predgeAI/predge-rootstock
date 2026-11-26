@@ -49,7 +49,7 @@ node script/usdrif-job.mjs status --job <ID> --tz Asia/Tokyo
 ```
 
 A client who does not use the CLI can do the client steps (approve + createJob, object, withdraw) from one page
-in MetaMask: [`app/job2.html`](../app/job2.html), hosted at https://predge-rsk-pilot.vercel.app/job2.html (contractor: [contractor.html](https://predge-rsk-pilot.vercel.app/contractor.html), reviewer: [review.html](https://predge-rsk-pilot.vercel.app/review.html)). It makes the
+in MetaMask: [`app/job2.html`](../app/job2.html), hosted at https://pilot.predge.io/job2.html (contractor: [contractor.html](https://pilot.predge.io/contractor.html), reviewer: [review.html](https://pilot.predge.io/review.html)). It makes the
 same calls as the CLI (the objection hash is `keccak256` of the UTF-8 text, as with `object --text`), shows the job
 state and the objection deadline in UTC and local time, and takes `provider`, `amount`, `evaluator`, `spec` and
 `expiryDays` from the URL so a ready link can be sent to the client.
